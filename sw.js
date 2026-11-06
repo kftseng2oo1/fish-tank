@@ -1,6 +1,6 @@
 // 3D 水草神仙魚缸 — service worker
 // 更新任何檔案後，把版本號 +1，使用者下次開啟就會拿到新版
-var CACHE = 'fish-tank-v2';
+var CACHE = 'fish-tank-v3';
 var FILES = [
   './',
   'index.html',

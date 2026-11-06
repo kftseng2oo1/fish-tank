@@ -246,16 +246,45 @@ const moon=new THREE.DirectionalLight(0x3a5aff,0.0);moon.position.set(-2,12,2);s
 const heaterLight=new THREE.PointLight(0xff7a2a,0.35,3);heaterLight.position.set(5.4,2.5,-2.0);scene.add(heaterLight);
 
 const rnd=(a,b)=>a+Math.random()*(b-a);
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
 function at(m,x,y,z){m.position.set(x,y,z);return m;}
 const lin=c=>c.convertSRGBToLinear();
 function soilY(x,z){return 0.3+(-z)*0.1+0.05*Math.sin(x*1.1)*Math.cos(z*1.6)+0.03*Math.sin(x*2.9+z*2.1);}
 function canvasTex(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t;}
 
 // cabinet / room
-const cab=new THREE.Mesh(new THREE.BoxGeometry(12.6,4,5.6),new THREE.MeshPhongMaterial({color:0x2e2620,shininess:20}));cab.position.y=-2.05;scene.add(cab);
-const cabTop=new THREE.Mesh(new THREE.BoxGeometry(12.8,0.12,5.8),new THREE.MeshPhongMaterial({color:0x1c1612}));cabTop.position.y=-0.06;scene.add(cabTop);
-for(let i=-1;i<=1;i+=2){const door=new THREE.Mesh(new THREE.BoxGeometry(5.9,3.4,0.05),new THREE.MeshPhongMaterial({color:0x3e3228,shininess:40}));door.position.set(i*3.05,-2.1,2.82);scene.add(door);
-  const knob=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.6,0.08),new THREE.MeshPhongMaterial({color:0xb8a080,shininess:90}));knob.position.set(i*0.35,-1.8,2.88);scene.add(knob);}
+// 藍色海洋風櫃子：深海藍櫃體、白色檯面與踢腳板，兩扇門合起來是一幅海浪、魚群、沙灘的畫
+const oceanTex=canvasTex(1024,600,(g,w,h)=>{
+  const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#7fd3ea');gr.addColorStop(0.28,'#2f9fd0');gr.addColorStop(0.62,'#16609e');gr.addColorStop(1,'#0a2c56');g.fillStyle=gr;g.fillRect(0,0,w,h);
+  // light rays
+  g.globalAlpha=0.12;g.fillStyle='#ffffff';for(const x0 of[120,330,560,820]){g.beginPath();g.moveTo(x0,0);g.lineTo(x0+60,0);g.lineTo(x0+180,h*0.8);g.lineTo(x0+60,h*0.8);g.closePath();g.fill();}g.globalAlpha=1;
+  // wave bands near the top
+  const wave=(y,amp,len,ph,fill,line)=>{g.beginPath();g.moveTo(0,y);for(let x=0;x<=w;x+=8)g.lineTo(x,y+Math.sin(x/len*Math.PI*2+ph)*amp);
+    if(fill){g.lineTo(w,0);g.lineTo(0,0);g.closePath();g.fillStyle=fill;g.fill();}if(line){g.strokeStyle=line;g.lineWidth=5;g.stroke();}};
+  wave(58,10,180,0,'#bfeefa',null);wave(64,10,180,0,null,'rgba(255,255,255,.95)');wave(96,8,140,1.4,null,'rgba(255,255,255,.55)');wave(128,6,220,2.6,null,'rgba(255,255,255,.3)');
+  // fish silhouettes
+  const fish=(x,y,s,c,dir)=>{g.save();g.translate(x,y);g.scale(s*dir,s);g.fillStyle=c;g.beginPath();g.ellipse(0,0,26,12,0,0,7);g.fill();
+    g.beginPath();g.moveTo(-20,0);g.lineTo(-40,-13);g.lineTo(-40,13);g.closePath();g.fill();g.fillStyle='rgba(10,40,80,.8)';g.beginPath();g.arc(14,-3,2.5,0,7);g.fill();g.restore();};
+  [[210,250,1.2,1],[262,282,0.9,1],[180,300,0.8,1],[700,220,1.3,-1],[760,262,1,-1],[650,270,0.85,-1],[470,360,1.1,1],[860,380,0.8,-1]].forEach(([x,y,s,d])=>fish(x,y,s,'rgba(190,240,255,.55)',d));
+  // bubbles
+  g.strokeStyle='rgba(255,255,255,.6)';g.lineWidth=2.5;for(let i=0;i<28;i++){const x=Math.random()*w,y=150+Math.random()*(h-260),r=3+Math.random()*7;g.beginPath();g.arc(x,y,r,0,7);g.stroke();}
+  // sand + seaweed + starfish + shell
+  g.fillStyle='#e9d6a8';g.beginPath();g.moveTo(0,h);for(let x=0;x<=w;x+=16)g.lineTo(x,h-46-Math.sin(x/160)*10-Math.sin(x/53)*4);g.lineTo(w,h);g.closePath();g.fill();
+  g.strokeStyle='#2f8f6a';g.lineWidth=9;g.lineCap='round';for(const x0 of[60,92,940,968,500]){g.beginPath();g.moveTo(x0,h-40);g.bezierCurveTo(x0-20,h-110,x0+25,h-150,x0-5,h-210-(x0%3)*20);g.stroke();}
+  const star=(x,y,r,c)=>{g.fillStyle=c;g.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*0.45:r;g.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);}g.closePath();g.fill();};
+  star(300,h-30,24,'#f08a5d');star(780,h-26,18,'#f5b45a');
+  g.fillStyle='#fff3e6';g.beginPath();g.moveTo(610,h-14);g.arc(610,h-30,18,Math.PI*0.95,Math.PI*2.05);g.closePath();g.fill();
+  g.strokeStyle='#e0c9b0';g.lineWidth=2;for(let i=-2;i<=2;i++){g.beginPath();g.moveTo(610,h-14);g.lineTo(610+i*8,h-44);g.stroke();}
+  // white frame groove around each door half
+  g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=6;g.strokeRect(22,22,w/2-44,h-44);g.strokeRect(w/2+22,22,w/2-44,h-44);});
+const cabMat=new THREE.MeshPhongMaterial({color:0x123a63,shininess:30});
+const cab=new THREE.Mesh(new THREE.BoxGeometry(12.6,4,5.6),cabMat);cab.position.y=-2.05;scene.add(cab);
+const whiteMat=new THREE.MeshPhongMaterial({color:0xe8f2f6,shininess:50});
+const cabTop=new THREE.Mesh(new THREE.BoxGeometry(12.8,0.14,5.8),whiteMat);cabTop.position.y=-0.06;scene.add(cabTop);
+const plinth=new THREE.Mesh(new THREE.BoxGeometry(12.7,0.22,5.7),whiteMat);plinth.position.y=-3.94;scene.add(plinth);
+for(let i=-1;i<=1;i+=2){const t=oceanTex.clone();t.needsUpdate=true;t.repeat.set(0.5,1);t.offset.set(i<0?0:0.5,0);
+  const door=new THREE.Mesh(new THREE.BoxGeometry(5.9,3.4,0.05),[cabMat,cabMat,cabMat,cabMat,new THREE.MeshPhongMaterial({map:t,shininess:60,specular:0x334455}),cabMat]);door.position.set(i*3.05,-2.1,2.82);scene.add(door);
+  const knob=new THREE.Mesh(new THREE.SphereGeometry(0.11,16,12),new THREE.MeshPhongMaterial({color:0xf4f8fa,shininess:120,specular:0xffffff}));knob.scale.z=0.7;knob.position.set(i*0.38,-1.8,2.9);scene.add(knob);}
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshPhongMaterial({color:0x0b1612}));floor.rotation.x=-Math.PI/2;floor.position.y=-4.05;scene.add(floor);
 
 // background
@@ -284,15 +313,36 @@ const causTex=(function(){const s=256;const c=document.createElement('canvas');c
 const causMat=new THREE.MeshBasicMaterial({map:causTex,transparent:true,opacity:.28,blending:THREE.AdditiveBlending,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2});
 
 // stones
-function makeStone(x,z,r,sy,seed){const g=new THREE.IcosahedronGeometry(r,2);const p=g.attributes.position;const col=[];const c=new THREE.Color();
+// 石頭：朝上的面長青苔（依面的朝向＋雜訊上色），再撒上一團團立體的苔蘚墊
+const stones=[];
+function makeStone(x,z,r,sy,seed){const g=new THREE.IcosahedronGeometry(r,3);const p=g.attributes.position;
   for(let i=0;i<p.count;i++){const vx=p.getX(i),vy=p.getY(i),vz=p.getZ(i);
-    const n=1+0.18*Math.sin(vx*3.1+seed)*Math.sin(vy*2.7+seed*2)*Math.sin(vz*3.7)+0.1*Math.sin(vx*8+vz*6+seed);
-    p.setXYZ(i,vx*n,vy*n*sy,vz*n);
-    c.setHex(Math.sin(vx*6+vy*9+seed)>0.3?0x8a8e92:0x5d6166);c.offsetHSL(0,0,rnd(-.03,.03));lin(c);col.push(c.r,c.g,c.b);}
-  g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));g.computeVertexNormals();
+    const n=1+0.18*Math.sin(vx*3.1/r*0.75+seed)*Math.sin(vy*2.7/r*0.75+seed*2)*Math.sin(vz*3.7/r*0.75)+0.1*Math.sin(vx*8+vz*6+seed);p.setXYZ(i,vx*n,vy*n*sy,vz*n);}
+  const col=new Float32Array(p.count*3),c=new THREE.Color(),A=V(0,0,0),B=V(0,0,0),C=V(0,0,0),N=V(0,0,0);
+  for(let f=0;f<p.count;f+=3){A.fromBufferAttribute(p,f);B.fromBufferAttribute(p,f+1);C.fromBufferAttribute(p,f+2);
+    N.subVectors(C,B).cross(B.clone().sub(A).negate()).normalize();if(N.dot(A.clone().add(B).add(C))<0)N.negate();
+    const cx=(A.x+B.x+C.x)/3,cz=(A.z+B.z+C.z)/3,cy=(A.y+B.y+C.y)/3;
+    const noise=0.5+0.5*Math.sin(cx*7+seed)*Math.sin(cz*6.3+seed*1.7)+0.25*Math.sin(cx*17+cz*13);
+    const moss=Math.min(1,Math.max(0,(N.y-0.15)*1.8))*noise+(cy>r*0.2?0.15:0);
+    if(moss>0.42){c.setHSL(rnd(0.22,0.28),rnd(0.4,0.55),rnd(0.15,0.24));}
+    else if(moss>0.3){c.setHex(0x6d7a5a);c.offsetHSL(0,0,rnd(-.03,.03));}
+    else{c.setHex(Math.sin(cx*6+cy*9+seed)>0.3?0x8a8e92:0x5d6166);c.offsetHSL(0,0,rnd(-.03,.03));}
+    lin(c);for(let k=0;k<3;k++){col[(f+k)*3]=c.r;col[(f+k)*3+1]=c.g;col[(f+k)*3+2]=c.b;}}
+  g.setAttribute('color',new THREE.BufferAttribute(col,3));g.computeVertexNormals();
   const m=new THREE.Mesh(g,new THREE.MeshPhongMaterial({vertexColors:true,flatShading:true,shininess:12}));
-  m.position.set(x,soilY(x,z)+r*sy*0.3,z);m.rotation.y=seed;m.castShadow=m.receiveShadow=true;scene.add(m);return m;}
+  m.position.set(x,soilY(x,z)+r*sy*0.3,z);m.rotation.y=seed;m.castShadow=m.receiveShadow=true;scene.add(m);m.userData.r=r;stones.push(m);return m;}
 makeStone(1.3,0.1,0.75,1.1,1);makeStone(2.35,-0.5,0.5,1.3,2);makeStone(0.3,0.75,0.35,0.8,3);makeStone(-1.6,0.6,0.3,0.7,4);
+{const puff=new THREE.IcosahedronGeometry(1,1);const N=1500;const inst=new THREE.InstancedMesh(puff,new THREE.MeshPhongMaterial({shininess:6,flatShading:true}),N);
+ const rc=new THREE.Raycaster(),d=new THREE.Object3D(),c=new THREE.Color(),nrm=V(0,0,0),up=V(0,1,0);let n=0;
+ stones.forEach(st=>st.updateMatrixWorld(true));
+ const per=stones.map(st=>Math.round(st.userData.r*st.userData.r*1500));
+ stones.forEach((st,si)=>{let tries=0,placed=0;while(placed<per[si]&&tries<per[si]*6&&n<N){tries++;
+   const a=rnd(0,6.28),rr=Math.sqrt(Math.random())*st.userData.r*1.05;rc.set(V(st.position.x+Math.cos(a)*rr,10,st.position.z+Math.sin(a)*rr),V(0,-1,0));
+   const h=rc.intersectObject(st)[0];if(!h)continue;nrm.copy(h.face.normal).transformDirection(st.matrixWorld);
+   const patch=0.5+0.5*Math.sin(h.point.x*7+si)*Math.sin(h.point.z*6.3+si*1.7);if(nrm.y<0.35||Math.random()>patch+0.25)continue;
+   const sc=rnd(0.018,0.042);d.position.copy(h.point).addScaledVector(nrm,sc*0.35);d.quaternion.setFromUnitVectors(up,nrm);d.scale.set(sc*rnd(1,1.6),sc*0.55,sc*rnd(1,1.6));d.rotateY(rnd(0,6.28));d.updateMatrix();
+   inst.setMatrixAt(n,d.matrix);c.setHSL(rnd(0.21,0.29),rnd(0.42,0.6),rnd(0.14,0.27));inst.setColorAt(n,c);n++;placed++;}});
+ inst.count=n;inst.receiveShadow=true;scene.add(inst);}
 
 // driftwood
 const woodMat=new THREE.MeshPhongMaterial({color:0x352015,flatShading:true,shininess:6});
@@ -301,7 +351,7 @@ function cyl(a,b,r0,r1,mat){const d=new THREE.Vector3().subVectors(b,a);const le
   const g=new THREE.CylinderGeometry(r1,r0,len,7,4);const p=g.attributes.position;for(let i=0;i<p.count;i++){const k=1+0.12*Math.sin(p.getY(i)*9+p.getX(i)*20);p.setX(i,p.getX(i)*k);p.setZ(i,p.getZ(i)*k);}g.computeVertexNormals();
   const m=new THREE.Mesh(g,mat);m.castShadow=m.receiveShadow=true;m.position.copy(a).addScaledVector(d,0.5);m.quaternion.setFromUnitVectors(up,d.normalize());scene.add(m);
   const j=new THREE.Mesh(new THREE.SphereGeometry(r1,7,5),mat);j.position.copy(b);scene.add(j);return m;}
-const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+
 const wp={root:V(-4.6,0.55,-1.5),mid:V(-2.4,2.3,-0.9)};
 cyl(wp.root,wp.mid,0.3,0.19,woodMat);
 cyl(wp.mid,V(-1.3,4.3,-1.5),0.19,0.06,woodMat);
