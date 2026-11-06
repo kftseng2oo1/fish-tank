@@ -494,23 +494,25 @@ vec3 p=transformed;
 if(part>0.5){vec3 q=p-pivot;float ang,c,sn;
   if(part<2.5){ang=(part<1.5?-1.0:1.0)*(0.5+0.4*sin(aAnim.w));c=cos(ang);sn=sin(ang);q=vec3(c*q.x+sn*q.z,q.y,-sn*q.x+c*q.z);}
   else if(part<3.5){ang=0.12*sin(aAnim.w*0.3);c=cos(ang);sn=sin(ang);q=vec3(q.x,c*q.y-sn*q.z,sn*q.y+c*q.z);}
-  else{ang=sign(pivot.x)*0.2*sin(aAnim.w*0.5);c=cos(ang);sn=sin(ang);q=vec3(c*q.x+sn*q.z,q.y,-sn*q.x+c*q.z);}
+  else if(part<4.5){ang=sign(pivot.x)*0.2*sin(aAnim.w*0.5);c=cos(ang);sn=sin(ang);q=vec3(c*q.x+sn*q.z,q.y,-sn*q.x+c*q.z);}
+  else if(part<5.5){float pu=max(0.0,sin(aAnim.w));q.xz*=1.0-0.22*pu;q.y*=1.0+0.12*pu;}
+  else{float k=max(0.0,-q.y);q.x+=sin(aAnim.w*0.7+q.y*4.0+pivot.x*9.0)*0.07*k;q.z+=cos(aAnim.w*0.6+q.y*3.0+pivot.z*9.0)*0.07*k;q.xz*=1.0-0.12*max(0.0,sin(aAnim.w-0.6));}
   p=q+pivot;}
 float zt=max(0.0,(uFront-p.z)/uLen);
 p.x+=aAnim.y*zt*zt*sin(aAnim.x-zt*4.0)+aAnim.z*zt*zt;
 transformed=p;`;
-function patchFish(mat,front,len){mat.customProgramCacheKey=()=>'fish-instanced-v1';
+function patchFish(mat,front,len){mat.customProgramCacheKey=()=>'fish-instanced-v2';
   mat.onBeforeCompile=sh=>{sh.uniforms.uFront={value:front};sh.uniforms.uLen={value:len};
     sh.vertexShader='attribute vec4 aAnim;attribute float part;attribute vec3 pivot;uniform float uFront;uniform float uLen;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n'+FISH_VS);};}
 const fishGroups={};
 const _m4=new THREE.Matrix4(),_q=new THREE.Quaternion(),_q2=new THREE.Quaternion(),_e=new THREE.Euler(),_p=new THREE.Vector3(),_s=new THREE.Vector3();
-function makeModel(kind,v){return kind==='angel'?makeAngel(v):kind==='discus'?makeDiscus(v):kind==='tetra'?makeTetra():kind==='guppy'?makeGuppy(v):kind==='cory'?makeCory():makeShrimp();}
+function makeModel(kind,v){return({angel:makeAngel,discus:makeDiscus,tetra:makeTetra,guppy:makeGuppy,cory:makeCory,shrimp:makeShrimp,zebra:makeZebra,rummy:makeRummy,oto:makeOto,betta:makeBetta,jelly:makeJelly,turtle:makeTurtle})[kind](v);}
 function getGroup(kind,v){const key=kind+':'+(v||'');if(fishGroups[key])return fishGroups[key];
   const S=SP[kind],baked=bakeModel(makeModel(kind,v)),cap=S.max;
   const anim=new THREE.InstancedBufferAttribute(new Float32Array(cap*4),4);anim.setUsage(THREE.DynamicDrawUsage);
   const meshes=[];
   for(const which of['op','tr']){const g=baked[which];if(!g)continue;g.setAttribute('aAnim',anim);
-    const mat=which==='op'?new THREE.MeshPhongMaterial({vertexColors:true,shininess:80,specular:0x555555,emissive:kind==='tetra'?0x061418:0x000000})
+    const dull=kind==='turtle'||kind==='oto';const mat=which==='op'?new THREE.MeshPhongMaterial({vertexColors:true,shininess:dull?18:80,specular:dull?0x1a1a1a:0x555555,emissive:kind==='tetra'?0x061418:0x000000})
                           :new THREE.MeshPhongMaterial({vertexColors:true,transparent:true,depthWrite:false,side:THREE.DoubleSide,shininess:60,emissive:kind==='guppy'?0x180808:0x000000});
     patchFish(mat,S.bend[0],S.bend[1]);
     const im=new THREE.InstancedMesh(g,mat,cap);im.count=0;im.frustumCulled=false;im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -566,19 +568,93 @@ function makeShrimp(){
   return{root,body,tail,pects:[]};
 }
 
-// species table (beh: mid=中層大型魚, school=群游, top=中上層, bottom=底棲, shrimp=蝦)
+function makeZebra(){
+  const root=new THREE.Group(),body=new THREE.Group();root.add(body);
+  body.add(bodyMesh(0.11,0.17,0.85,(x,y,z,c)=>{c.setHex(0xe9dfb6);if(Math.abs(y)<0.7&&z<0.75&&Math.sin(y*20)>0.25)c.setHex(0x1f2d78);if(y<-0.75)c.setHex(0xf4f0e0);}));
+  const fm=finM(0xeef2f0,0.35);const tail=new THREE.Group();tail.position.z=-0.82;body.add(tail);
+  tail.add(new THREE.Mesh(finShape([[0,0],[-0.4,0.28],[-0.3,0,-0.4,-0.28],[0,0]]),fm));
+  for(const yy of[0.06,-0.06])tail.add(new THREE.Mesh(finShape([[0,yy+0.02],[-0.38,yy*2.6+0.02],[-0.38,yy*2.6-0.02],[0,yy-0.02]]),finM(0x1f2d78,0.6)));
+  body.add(new THREE.Mesh(finShape([[0.0,0.15],[-0.15,0.36],[-0.3,0.15]]),fm));body.add(new THREE.Mesh(finShape([[-0.1,-0.15],[-0.3,-0.32],[-0.55,-0.14]]),fm));
+  eyes(body,0.065,0.05,0.66,0.045,0xd8d0b0);
+  return{root,body,tail,pects:pectorals(body,0.09,-0.05,0.4,0.1,fm)};}
+function makeRummy(){
+  const root=new THREE.Group(),body=new THREE.Group();root.add(body);
+  body.add(bodyMesh(0.12,0.2,0.88,(x,y,z,c)=>{c.setHex(0xd6dfd8);if(z>0.55)c.setHex(0xe0222c);else if(z>0.4)c.lerp(new THREE.Color(0xe0222c),(z-0.4)/0.15);if(y<-0.7)c.setHex(0xeef2ee);}));
+  const fm=finM(0xffffff,0.55),bk=finM(0x111111,0.85);const tail=new THREE.Group();tail.position.z=-0.85;body.add(tail);
+  tail.add(new THREE.Mesh(finShape([[0,0],[-0.4,0.3],[-0.3,0,-0.4,-0.3],[0,0]]),fm));
+  tail.add(new THREE.Mesh(finShape([[0,0.03],[-0.34,0.0],[-0.34,-0.05],[0,-0.03]]),bk));
+  for(const sg of[1,-1])tail.add(new THREE.Mesh(finShape([[-0.08,0.07*sg],[-0.35,0.22*sg],[-0.37,0.16*sg],[-0.1,0.04*sg]]),bk));
+  body.add(new THREE.Mesh(finShape([[0.0,0.17],[-0.17,0.4],[-0.3,0.17]]),fm));
+  eyes(body,0.075,0.06,0.68,0.05,0xe0302a);
+  return{root,body,tail,pects:pectorals(body,0.1,-0.05,0.4,0.11,fm)};}
+function makeOto(){
+  const root=new THREE.Group(),body=new THREE.Group();root.add(body);
+  body.add(bodyMesh(0.2,0.18,0.85,(x,y,z,c)=>{c.setHex(0xb9a982);if(y>-0.25&&y<0.25&&z<0.85)c.setHex(0x3a3020);if(y>0.5)c.setHex(0x8a7a58);if(y<-0.5)c.setHex(0xeae2cc);},-0.6));
+  const fm=finM(0xb0a080,0.55);const tail=new THREE.Group();tail.position.z=-0.82;body.add(tail);
+  tail.add(new THREE.Mesh(finShape([[0,0],[-0.32,0.24],[-0.24,0,-0.32,-0.24],[0,0]]),fm));
+  body.add(new THREE.Mesh(finShape([[0.15,0.16],[0.0,0.42],[-0.15,0.16]]),fm));
+  const mouth=new THREE.Mesh(new THREE.SphereGeometry(0.09,10,8),new THREE.MeshPhongMaterial({color:0x5a4a34}));mouth.scale.set(1,0.4,0.8);mouth.position.set(0,-0.11,0.78);body.add(mouth);
+  eyes(body,0.13,0.07,0.6,0.045,0xc8c0a0);
+  return{root,body,tail,pects:pectorals(body,0.17,-0.12,0.35,0.16,fm)};}
+function makeBetta(v){
+  const col={red:0xc8102e,blue:0x2346c8,purple:0x7a2aa8,white:0xf2f0ff}[v];
+  const root=new THREE.Group(),body=new THREE.Group();root.add(body);
+  body.add(bodyMesh(0.13,0.24,0.8,(x,y,z,c)=>{c.setHex(col);if(v==='white'&&Math.sin(z*7+y*5)>0.6)c.setHex(0xff8a3a);if(z>0.6)c.offsetHSL(0,0,-0.06);}));
+  const tf=new THREE.MeshPhongMaterial({color:col,side:THREE.DoubleSide,transparent:true,opacity:.86,depthWrite:false,shininess:70,emissive:col,emissiveIntensity:0.15});
+  const tail=new THREE.Group();tail.position.z=-0.74;body.add(tail);
+  tail.add(new THREE.Mesh(finShape([[0,0.15],[-0.6,0.95],[-1.15,0.6,-1.2,0],[-1.15,-0.6,-0.6,-0.95],[0,-0.15]]),tf));
+  body.add(new THREE.Mesh(finShape([[-0.05,0.2],[-0.3,0.7],[-0.8,0.62],[-0.72,0.18]]),tf));
+  body.add(new THREE.Mesh(finShape([[0.25,-0.2],[-0.1,-0.8],[-0.7,-0.9],[-0.72,-0.2]]),tf));
+  const vents=[];for(const sg of[-1,1]){const g=new THREE.Group();g.userData.part=3;g.position.set(sg*0.03,-0.2,0.32);g.add(new THREE.Mesh(finShape([[0.02,0],[-0.03,0],[-0.3,-0.55],[-0.24,-0.56]]),tf));body.add(g);vents.push(g);}
+  eyes(body,0.085,0.07,0.55,0.05,0x111111);
+  return{root,body,tail,pects:pectorals(body,0.12,-0.06,0.35,0.13,finM(0xffffff,0.3)),vents};}
+function makeJelly(){
+  const root=new THREE.Group(),body=new THREE.Group();root.add(body);
+  const bellG=new THREE.Group();bellG.userData.part=5;body.add(bellG);
+  const bell=new THREE.Mesh(new THREE.SphereGeometry(1,28,12,0,Math.PI*2,0,Math.PI/2),new THREE.MeshPhongMaterial({color:0xeaf6ff,transparent:true,opacity:.42,side:THREE.DoubleSide,depthWrite:false,shininess:120,emissive:0x15242e}));
+  bell.scale.set(1,0.62,1);bellG.add(bell);
+  const gon=new THREE.MeshPhongMaterial({color:0xf8e6c4,transparent:true,opacity:.8,depthWrite:false,emissive:0x2a2010});
+  for(let i=0;i<4;i++){const a=i*Math.PI/2+Math.PI/4,m=new THREE.Mesh(new THREE.SphereGeometry(0.22,10,8),gon);m.scale.set(1.3,0.5,0.6);m.rotation.y=-a;m.position.set(Math.cos(a)*0.42,0.22,Math.sin(a)*0.42);bellG.add(m);}
+  const man=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.2,0.45,10),gon);man.position.y=0.05;bellG.add(man);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(0.98,0.04,6,32),new THREE.MeshPhongMaterial({color:0xffffff,transparent:true,opacity:.6,depthWrite:false}));rim.rotation.x=Math.PI/2;bellG.add(rim);
+  const tm=new THREE.MeshPhongMaterial({color:0xf2fbff,transparent:true,opacity:.5,depthWrite:false});
+  for(let i=0;i<28;i++){const a=i/28*Math.PI*2,L=rnd(0.6,1.2);const g=new THREE.Group();g.userData.part=6;g.position.set(Math.cos(a)*0.95,0,Math.sin(a)*0.95);
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([V(0,0,0),V(Math.cos(a)*0.06,-L*0.5,Math.sin(a)*0.06),V(Math.cos(a)*0.02,-L,Math.sin(a)*0.02)]),8,0.018,3,false),tm));body.add(g);}
+  return{root,body,tail:new THREE.Group(),pects:[]};}
+function makeTurtle(){
+  const root=new THREE.Group(),body=new THREE.Group();root.add(body);
+  body.add(bodyMesh(1,0.48,1.25,(x,y,z,c)=>{c.setHex(0x4a3f2a);const sc=Math.abs(Math.sin(x*4.2))<0.12||Math.abs(Math.sin(z*3.4+0.5))<0.1;if(sc)c.setHex(0x231c12);
+    if(y<0.25)c.setHex(0x5a4a30);if(y<0.05)c.setHex(0x2e2618);c.offsetHSL(0,0,(Math.sin(x*9)*Math.sin(z*7))*0.03);},-0.08));
+  const pl=new THREE.Mesh(new THREE.SphereGeometry(1,24,12),new THREE.MeshPhongMaterial({color:0xc9b98a,shininess:20}));pl.scale.set(0.92,0.14,1.18);pl.position.y=-0.05;body.add(pl);
+  const skin=new THREE.MeshPhongMaterial({color:0x26221a,shininess:30});
+  const neck=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.2,0.45,12),skin);neck.rotation.x=Math.PI/2;neck.position.set(0,0.05,1.25);body.add(neck);
+  const head=bodyMesh(0.22,0.2,0.3,(x,y,z,c)=>{c.setHex(0x3a3528);if(Math.abs(x)>0.55&&Math.abs(Math.sin(y*9))<0.35)c.setHex(0xd8c860);});head.position.set(0,0.08,1.55);body.add(head);
+  const eb=new THREE.MeshPhongMaterial({color:0x111111,shininess:120,specular:0xffffff});for(const sg of[-1,1]){const e=new THREE.Mesh(new THREE.SphereGeometry(0.045,8,6),eb);e.position.set(sg*0.15,0.15,1.68);body.add(e);}
+  const pects=[];for(const zz of[0.75,-0.75])for(const sg of[-1,1]){const pv=new THREE.Group();pv.userData.part=sg<0?1:2;pv.position.set(sg*0.7,-0.05,zz);
+    const leg=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),skin);leg.scale.set(0.34,0.09,0.18);leg.position.set(sg*0.28,0,0);pv.add(leg);body.add(pv);pects.push({pv,s:sg});}
+  const tl=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.3,8),skin);tl.rotation.x=-Math.PI/2;tl.position.set(0,0,-1.3);body.add(tl);
+  return{root,body,tail:new THREE.Group(),pects};}
+
+// species table (beh: mid=中層大型魚, school=群游, top=中上層, bottom=底棲, shrimp=蝦, glass=貼玻璃吃藻, jelly=水母, turtle=烏龜)
 const SP={
   angel:{name:'神仙魚',emoji:'🐠',desc:'高身長鰭，溫和但會吃小魚',beh:'mid',scale:[0.42,0.48],base:0.55,bend:[0.75,1.45,0.075],hit:0.8,fr:4.2,load:5,max:10,ymin:1.0,ymax:0.9,pitch:0.4,freq:4.5},
   discus:{name:'七彩神仙',emoji:'🌈',desc:'熱帶魚之王，要 28–30°C 軟水',beh:'mid',scale:[0.48,0.55],base:0.45,bend:[0.82,1.3,0.05],hit:0.8,fr:4.2,load:7,max:12,ymin:0.85,ymax:0.85,pitch:0.4,freq:4},
+  betta:{name:'鬥魚',emoji:'🎐',desc:'長鰭華麗，公魚一缸只能一隻',beh:'mid',scale:[0.28,0.32],base:0.4,bend:[0.8,1.9,0.07],hit:0.55,fr:2.6,load:1.5,max:3,ymin:0.5,ymax:0.35,pitch:0.4,freq:5},
   tetra:{name:'紅蓮燈',emoji:'✨',desc:'藍紅亮帶，群游 10 隻以上',beh:'school',scale:[0.19,0.21],base:1.1,bend:[0.9,1.3,0.045],hit:0.38,fr:2.2,load:0.6,max:40,ymin:0.3,ymax:0.2,pitch:0.6,freq:11},
+  rummy:{name:'紅鼻剪刀',emoji:'👃',desc:'紅鼻子、黑白剪刀尾，群游',beh:'school',scale:[0.2,0.22],base:1.0,bend:[0.9,1.3,0.045],hit:0.38,fr:2.2,load:0.6,max:30,ymin:0.3,ymax:0.25,pitch:0.6,freq:11},
+  zebra:{name:'斑馬魚',emoji:'🦓',desc:'藍金條紋，游很快的上層魚',beh:'school',scale:[0.2,0.22],base:1.5,bend:[0.88,1.3,0.045],hit:0.38,fr:2.2,load:0.7,max:30,ymin:0.3,ymax:0.2,pitch:0.6,freq:13},
   guppy:{name:'孔雀魚',emoji:'🎏',desc:'大尾巴很華麗，好養又會生',beh:'top',scale:[0.2,0.24],base:0.9,bend:[0.75,1.6,0.06],hit:0.42,fr:2.2,load:0.7,max:30,ymin:0.3,ymax:0.2,pitch:0.6,freq:10},
   cory:{name:'鼠魚',emoji:'🐟',desc:'底棲清道夫，群養 4 隻以上',beh:'bottom',scale:[0.27,0.29],base:0.6,bend:[0.9,1.35,0.055],hit:0.42,fr:2.4,load:1.2,max:20,ymin:0.12,ymax:-0.8,pitch:0.6,freq:9},
+  oto:{name:'小精靈',emoji:'🧚',desc:'貼在玻璃和葉子上吃藻',beh:'glass',scale:[0.17,0.19],base:0.6,bend:[0.85,1.25,0.04],hit:0.35,fr:1.9,load:0.6,max:15,ymin:0.12,ymax:0.3,pitch:0.6,freq:10,edge:true},
   shrimp:{name:'黑殼蝦',emoji:'🦐',desc:'吃藻和殘餌的小幫手',beh:'shrimp',scale:[0.16,0.2],base:0.25,bend:[0.9,1.5,0],hit:0.35,fr:1.6,load:0.1,max:40,ymin:0.06,ymax:-0.35,pitch:0,freq:0},
+  jelly:{name:'桃花水母',emoji:'🪼',desc:'淡水水母，一縮一放慢慢漂',beh:'jelly',scale:[0.14,0.2],base:0.3,bend:[2,2,0],hit:0.35,fr:1.8,load:0.2,max:15,ymin:0.7,ymax:0.35,pitch:0,freq:0},
+  turtle:{name:'麝香龜',emoji:'🐢',desc:'小型水龜，會浮上水面換氣',beh:'turtle',scale:[0.4,0.46],base:0.3,bend:[2,2,0],hit:0.65,fr:3.0,load:8,max:2,ymin:0.2,ymax:0.25,pitch:0.5,freq:0},
 };
-const ORDER=['angel','discus','tetra','guppy','cory','shrimp'];
-const VARIANTS={angel:['silver','gold','black'],discus:['turq','red','gold'],guppy:['red','blue','yellow','cobra']};
+const ORDER=['angel','discus','betta','tetra','rummy','zebra','guppy','cory','oto','shrimp','jelly','turtle'];
+const VARIANTS={angel:['silver','gold','black'],discus:['turq','red','gold'],guppy:['red','blue','yellow','cobra'],betta:['red','blue','purple','white']};
 const TITLES={angel:{silver:'神仙魚（野生色）',gold:'金神仙',black:'黑神仙'},discus:{turq:'七彩神仙（藍松石）',red:'七彩神仙（鴿血）',gold:'七彩神仙（黃金）'},
-  guppy:{red:'孔雀魚（紅尾）',blue:'孔雀魚（藍尾）',yellow:'孔雀魚（黃尾）',cobra:'孔雀魚（綠尾）'}};
+  guppy:{red:'孔雀魚（紅尾）',blue:'孔雀魚（藍尾）',yellow:'孔雀魚（黃尾）',cobra:'孔雀魚（綠尾）'},betta:{red:'鬥魚（紅）',blue:'鬥魚（藍）',purple:'鬥魚（紫）',white:'鬥魚（白錦鯉）'}};
+const SCHOOL_Y={tetra:[1.6,3.8],rummy:[1.2,3.2],zebra:[3.2,5.0]};const schools={};for(const k in SCHOOL_Y)schools[k]={t:V(rnd(-3,3),(SCHOOL_Y[k][0]+SCHOOL_Y[k][1])/2,0.8),timer:0};
 const vIdx={};
 const fishes=[],tetras=[],bigs=[];
 const school={c:V(0,3,0.8),t:V(1,3,0.8),v:V(0,0,0),timer:0};
@@ -589,27 +665,36 @@ function spawn(kind,drop){const S=SP[kind],vs=VARIANTS[kind];const i=vIdx[kind]|
   if(S.beh==='mid')o.pos.set(rnd(-3,3),rnd(2.2,4),rnd(-0.3,1.5));
   else if(S.beh==='school'){o.pos.set(rnd(-1.5,1.5),rnd(2.5,3.5),rnd(0,1.5));o.vel.set(rnd(0.5,1),rnd(-.1,.1),rnd(-.2,.2));}
   else if(S.beh==='top')o.pos.set(rnd(-4,4),rnd(3.5,5),rnd(-0.5,1.5));
+  else if(S.beh==='glass')o.pos.set(rnd(-5,5),rnd(1,4),2.3);
+  else if(S.beh==='jelly')o.pos.set(rnd(-4,4),rnd(2,4.5),rnd(-1,1.5));
   else{const x=rnd(-4.5,4.5),z=rnd(0.5,1.9);o.pos.set(x,soilY(x,z)+S.ymin,z);}
+  if(S.beh==='turtle'){o.tmode='walk';o.breath=rnd(12,35);}
   if(drop){o.pos.x=rnd(-2.5,2.5);o.pos.z=rnd(0,1.5);o.pos.y=WATER-0.4;
-    if(S.beh==='bottom'||S.beh==='shrimp')o.sink=true;else{o.scare=0.7;o.scareDir.set(rnd(-.3,.3),-1,0.2).normalize();}}
+    if(S.beh==='bottom'||S.beh==='shrimp'||S.beh==='turtle')o.sink=true;else if(S.beh==='jelly'){}else{o.scare=0.7;o.scareDir.set(rnd(-.3,.3),-1,0.2).normalize();}}
   o.root.position.copy(o.pos);
   grp.items.push(o);writeInstance(o,0,0,0,0,0,0);
-  newTarget(o);fishes.push(o);if(S.beh==='school')tetras.push(o);if(S.beh==='mid')bigs.push(o);return o;}
+  newTarget(o);fishes.push(o);if(S.beh==='school')tetras.push(o);if(S.beh==='mid'||S.beh==='turtle')bigs.push(o);return o;}
 function despawn(o){const g=o.grp,last=g.items.pop();if(last!==o){g.items[o.idx]=last;last.idx=o.idx;writeInstance(last,0,0,0,0,0,0);}g.dirty=true;
   [fishes,tetras,bigs].forEach(a=>{const i=a.indexOf(o);if(i>=0)a.splice(i,1);});
   bigs.forEach(b=>{if(b.prey===o){b.prey=null;b.mode='cruise';}if(b.flee===o)b.flee=null;});
   if(typeof follow!=='undefined'&&follow===o)stopFollow();}
 function newTarget(o){
-  if(o.beh==='mid')o.target.set(rnd(-4.6,4.6),o.kind==='discus'?rnd(1.8,4.0):rnd(2.2,4.4),rnd(-0.7,1.7));
+  if(o.beh==='mid')o.target.set(rnd(-4.6,4.6),o.kind==='discus'?rnd(1.8,4.0):o.kind==='betta'?rnd(3.4,5.1):rnd(2.2,4.4),rnd(-0.7,1.7));
+  else if(o.beh==='glass'){const r=Math.random();
+    if(r<0.6){o.target.set(rnd(-5.2,5.2),rnd(0.9,4.6),2.36);o.gn=V(0,0,-1);}
+    else if(r<0.8){o.target.set(rnd(-5.2,5.2),rnd(1.4,4.6),-2.36);o.gn=V(0,0,1);}
+    else{const sx=Math.random()<0.5?-1:1;o.target.set(sx*5.86,rnd(0.9,4.6),rnd(-2,2));o.gn=V(-sx,0,0);}
+    o.timer=rnd(8,14);return;}
+  else if(o.beh==='jelly'){o.timer=99;return;}
   else if(o.beh==='top'){o.target.set(rnd(-5,5),rnd(3.3,5.2),rnd(-1,1.9));o.timer=rnd(1.5,4);return;}
-  else if(o.beh==='bottom'){o.target.set(rnd(-5.2,5.2),0,rnd(0.5,2.0));o.pause=0;}
+  else if(o.beh==='bottom'||o.beh==='turtle'){o.target.set(rnd(-5.2,5.2),0,rnd(o.beh==='turtle'?0:0.5,2.0));o.pause=0;}
   else if(o.beh==='shrimp'){o.target.set(Math.max(-5.3,Math.min(5.3,o.pos.x+rnd(-1.2,1.2))),0,Math.max(0.2,Math.min(2.1,o.pos.z+rnd(-0.8,0.8))));o.pause=0;}
   o.timer=rnd(3,7);}
-const counts={angel:3,discus:0,tetra:12,guppy:0,cory:4,shrimp:0};
+const counts={angel:3,discus:0,betta:0,tetra:12,rummy:0,zebra:0,guppy:0,cory:4,oto:0,shrimp:0,jelly:0,turtle:0};
 try{const c=JSON.parse(localStorage.getItem('aq_counts')||'null');if(c)for(const k of ORDER)if(typeof c[k]==='number')counts[k]=Math.max(0,Math.min(SP[k].max,c[k]|0));}catch(e){}
-const TCODE={angel:'a',discus:'d',tetra:'t',guppy:'g',cory:'c',shrimp:'s'};
+const TCODE={angel:'a',discus:'d',tetra:'t',guppy:'g',cory:'c',shrimp:'s',betta:'b',rummy:'r',zebra:'z',oto:'o',jelly:'j',turtle:'k'};
 function encodeTank(c){return ORDER.filter(k=>c[k]).map(k=>TCODE[k]+c[k]).join('')||'0';}
-function decodeTank(str){const c={};ORDER.forEach(k=>c[k]=0);const re=/([adtgcs])(\d+)/g;let m,ok=str==='0';
+function decodeTank(str){const c={};ORDER.forEach(k=>c[k]=0);const re=/([adtgcsbrzojk])(\d+)/g;let m,ok=str==='0';
   while((m=re.exec(str))){const k=ORDER.find(q=>TCODE[q]===m[1]);c[k]=Math.min(SP[k].max,+m[2]);ok=true;}return ok?c:null;}
 let QS=null;try{QS=new URLSearchParams(location.search);}catch(e){}
 const sharedTank=QS&&QS.get('tank')?decodeTank(QS.get('tank')):null,sharedName=QS&&QS.get('name')||'';
@@ -753,7 +838,7 @@ function handleTap(x,y){
   if(hit)knock(hit.point,hit.face.normal);
 }
 let zoomTo=null;
-function startFollow(o){follow=o;zoomTo=SP[o.kind].fr;phi=(o.beh==='bottom'||o.beh==='shrimp')?1.12:1.45;lastUse=-99;
+function startFollow(o){follow=o;zoomTo=SP[o.kind].fr;phi=(o.beh==='bottom'||o.beh==='shrimp'||o.beh==='turtle')?1.12:1.45;lastUse=-99;
   $('fName').textContent=o.title;$('follow').style.display='flex';labelBox.style.display='none';card.style.display='none';$('hint').style.opacity=0;}
 function stopFollow(){follow=null;zoomTo=homeRadius;$('follow').style.display='none';labelBox.style.display=showLabels?'':'none';}
 $('fX').onclick=stopFollow;$('fInfo').onclick=()=>follow&&showCard(follow.kind);
@@ -785,6 +870,12 @@ const INFO={
   discus:['七彩神仙','亞馬遜河的圓盤狀慈鯛，被稱為「熱帶魚之王」。缸裡會輪流出現藍松石、鴿血、黃金三種花色。需要 28–30°C、軟水弱酸，水質要非常乾淨，比較適合有經驗的人。'],
   guppy:['孔雀魚','公魚有又大又華麗的尾巴，顏色很多。好養、活潑，常在中上層游。卵胎生，繁殖非常快。'],
   shrimp:['黑殼蝦','小型淡水蝦，體長約 2–3 cm，會在底砂和水草上撿食藻類和殘餌。便宜好養，但體型小，容易被大型魚吃掉。'],
+  betta:['鬥魚','原產東南亞，公魚有又長又大的鰭，顏色很多。會到水面直接呼吸空氣，喜歡水流平緩的環境。公魚之間會打架，一缸只能一隻公魚。'],
+  rummy:['紅鼻剪刀','鼻頭鮮紅、尾巴有黑白剪刀紋的群游燈魚，水質不好時紅色會變淡，可以當水質指標。'],
+  zebra:['斑馬魚','身上有藍金相間的橫紋，活潑、好養、游得很快，常在中上層成群穿梭。也很會跳，缸要加蓋。'],
+  oto:['小精靈','小型吸口鯰，會貼在玻璃、葉子和石頭上刮食藻類，是水草缸的除藻幫手。很溫和，要群養。'],
+  jelly:['桃花水母','淡水水母，傘狀身體直徑約 1–2 公分，一縮一放地在水中漂浮。台灣也有野生紀錄。很脆弱，容易被魚吃掉或被過濾器吸入。'],
+  turtle:['麝香龜','小型水龜，背甲約 10 公分，大多待在水底爬行，每隔一陣子會浮上水面換氣。需要岸上曬背區和 UVB 燈，一般會另外養在龜缸。'],
   cory:['鼠魚（三線/花鼠）','底棲魚，會用觸鬚在砂裡翻找掉下去的飼料，是缸裡的清道夫。要群養 4 隻以上，記得給沉底飼料。'],
 };
 const labelDefs=[['led',V(0,7.55,0.1)],['can',V(7.4,-1.6,0.3)],['lily',V(-4.5,5.35,-2.25)],['heater',V(5.45,4.7,-D/2+0.25)],['thermo',V(-5.3,4.95,D/2)],
@@ -866,9 +957,21 @@ function warnings(c,pct){const W=[];const add=(l,t)=>W.push([l,t]);
   if(c.tetra>0&&c.tetra<6)add('warn','紅蓮燈是群游魚，至少 6 隻，10 隻以上才比較有安全感。');
   if(c.cory>0&&c.cory<4)add('warn','鼠魚要群養，至少 4 隻。');
   if(c.angel>=6)add('warn','神仙魚配對後會佔地盤，數量多時容易打架，要多放沉木、水草隔開視線。');
+  if(c.turtle)add('bad','烏龜會吃小魚、小蝦和水母，也會啃水草；牠還需要能爬上岸曬背的陸地和 UVB 燈，排泄量也大。通常不跟熱帶魚混養，最好另開龜缸。');
+  if(c.turtle>1)add('warn','兩隻以上的烏龜可能會搶食、互咬，空間要更大。');
+  if(c.betta>1)add('bad','鬥魚公魚之間會打到受傷甚至死亡，同一缸只能養一隻公魚。');
+  if(c.betta&&(c.angel||c.zebra||c.rummy||c.tetra>=12))add('warn','鬥魚的長鰭容易被神仙魚、斑馬魚等魚啄咬；鬥魚游得慢，也搶不到飼料。');
+  if(c.betta&&c.guppy)add('warn','鬥魚可能把孔雀魚的大尾巴當成對手攻擊。');
+  if(c.zebra>0&&c.zebra<6)add('warn','斑馬魚是群游魚，至少 6 隻；牠們很活潑，水面上方最好加蓋，避免跳出缸外。');
+  if(c.rummy>0&&c.rummy<6)add('warn','紅鼻剪刀要 6 隻以上一起養，才會整群一起游。');
+  if(c.zebra&&(c.angel||c.discus))add('warn','斑馬魚游得快、愛搶食，可能啄神仙魚或七彩神仙的長鰭。');
+  if(c.oto>0&&c.oto<3)add('warn','小精靈喜歡群居，至少 3 隻，最好 6 隻。');
+  if(c.oto)add('info','小精靈主要吃藻類，新缸或藻太少時要補藻片或燙過的蔬菜，不然會餓瘦。');
+  if(c.jelly&&ORDER.some(k=>k!=='jelly'&&k!=='shrimp'&&c[k]))add('warn','大多數魚、烏龜都會啄食桃花水母，牠們最好單獨飼養。');
+  if(c.jelly)add('info','桃花水母是淡水水母，台灣也有野生紀錄；牠吃水中的微小浮游動物，過濾器進水口要套海綿，避免被吸進去。');
   const hasProblem=W.some(w=>w[0]!=='info');
   if(c.discus)add('info','七彩神仙對水質很敏感，建議每週換水 30–50%。');
-  if(c.discus&&c.tetra)add('ok','紅蓮燈能適應 28–29°C，是七彩神仙的經典搭配。');
+  if(c.discus&&(c.tetra||c.rummy))add('ok','紅蓮燈、紅鼻剪刀都能適應 28–29°C，是七彩神仙的經典搭配。');
   if(c.guppy)add('info','孔雀魚是卵胎生，公母混養幾乎每個月都會生小魚。');
   if(c.shrimp&&!c.angel&&!c.discus)add('ok','黑殼蝦會幫忙吃藻和殘餌，是水草缸的好幫手。');
   if(!ORDER.some(k=>c[k]))add('info','缸裡現在沒有魚。');
@@ -977,7 +1080,7 @@ function flowAt(x,y,z,t,out){out.set(0,0,0);
   out.x+=0.04*Math.sin(0.7*y+t*0.3+z);out.z+=0.04*Math.sin(0.6*x-t*0.25);out.y+=0.02*Math.sin(x*0.5+z*0.7+t*0.4);
   return out;}
 const flw=V(0,0,0);
-const FLOW_K={school:0.35,top:0.35,mid:0.2,bottom:0,shrimp:0};
+const FLOW_K={school:0.35,top:0.35,mid:0.2,bottom:0,shrimp:0,glass:0,jelly:0,turtle:0};
 
 // ---------- animate ----------
 const clock=new THREE.Clock();let nightK=0,thermoT=0;const tmp=V(0,0,0),des=V(0,0,0),look=V(0,0,0);
@@ -994,12 +1097,12 @@ function animate(){
   if(zoomTo!==null){radius+=(zoomTo-radius)*Math.min(1,dt*3);if(Math.abs(zoomTo-radius)<0.05)zoomTo=null;}
   if(follow){tgt.lerp(follow.pos,Math.min(1,dt*4));
     if(t-lastUse>1.5){const cA=Math.cos(follow.yaw+sideSign*Math.PI/2),cB=Math.cos(follow.yaw-sideSign*Math.PI/2);if(cB>cA+0.6)sideSign*=-1;
-      let d=follow.yaw+sideSign*Math.PI/2-theta;d=Math.atan2(Math.sin(d),Math.cos(d));theta+=d*Math.min(1,dt*1.2);phi+=(((follow.beh==='bottom'||follow.beh==='shrimp')?1.12:1.45)-phi)*Math.min(1,dt);}}
+      let d=follow.yaw+sideSign*Math.PI/2-theta;d=Math.atan2(Math.sin(d),Math.cos(d));theta+=d*Math.min(1,dt*1.2);phi+=(((follow.beh==='bottom'||follow.beh==='shrimp'||follow.beh==='turtle')?1.12:1.45)-phi)*Math.min(1,dt);}}
   else{tgt.lerp(home,Math.min(1,dt*2));
     if(saver){theta+=dt*0.05;phi+=((1.32+0.08*Math.sin(t*0.07))-phi)*Math.min(1,dt*0.5);}
     else if(t-lastUse>6){auto+=dt;theta+=Math.sin(auto*0.15)*0.0016;}}
   if(saver){saverT+=dt;
-    if(saverPhase===0&&saverT>18&&fishes.length){const pool=fishes.filter(f=>f.beh==='mid'||f.beh==='school'||f.beh==='top');const f=(pool.length?pool:fishes)[Math.random()*(pool.length||fishes.length)|0];
+    if(saverPhase===0&&saverT>18&&fishes.length){const pool=fishes.filter(f=>f.beh!=='bottom'&&f.beh!=='shrimp'&&f.beh!=='glass');const f=(pool.length?pool:fishes)[Math.random()*(pool.length||fishes.length)|0];
       startFollow(f);zoomTo=SP[f.kind].fr*1.25;saverPhase=1;saverT=0;}
     else if(saverPhase===1&&(saverT>14||!follow)){stopFollow();saverPhase=0;saverT=0;}}
   if(soundOn&&ambSnd&&airOn){bubbleT-=dt;if(bubbleT<=0){bubbleSound();bubbleT=rnd(0.05,0.2);}}
@@ -1047,25 +1150,29 @@ function animate(){
     const g=soilY(f.position.x,f.position.z)+0.03;if(f.position.y<g){f.position.y=g;u.life=(u.life||0)+dt;if(u.life>15){scene.remove(f);foods.splice(i,1);}}}
 
   // school wander goal
-  school.timer-=dt;if(school.timer<=0){school.t.set(rnd(-4.3,4.3),rnd(1.6,3.8),rnd(-0.3,1.8));school.timer=rnd(4,8);}
+  for(const k in schools){const sc=schools[k];sc.timer-=dt;if(sc.timer<=0){const yr=SCHOOL_Y[k];sc.t.set(rnd(-4.3,4.3),rnd(yr[0],yr[1]),rnd(-0.3,1.8));sc.timer=rnd(4,8);}}
 
   for(const o of fishes){
     o.scare=Math.max(0,o.scare-dt);
     if(o.sink){o.pos.y-=dt*1.1;o.pos.x+=Math.sin(t*3+o.ph)*0.004;const gy=soilY(o.pos.x,o.pos.z)+SP[o.kind].ymin;if(o.pos.y<=gy){o.pos.y=gy;o.sink=false;}o.root.position.copy(o.pos);writeInstance(o,0,0,o.flap+=dt*6,0,0,0);continue;}
     let chasing=null,bestF=1e9;
-    if(foods.length){for(const f of foods){const btm=o.beh==='bottom'||o.beh==='shrimp';if(btm&&f.position.y>soilY(f.position.x,f.position.z)+0.5)continue;if(!btm&&f.userData.sinker)continue;
+    if(foods.length&&o.beh!=='jelly'&&o.beh!=='glass'){for(const f of foods){const btm=o.beh==='bottom'||o.beh==='shrimp';if(btm&&f.position.y>soilY(f.position.x,f.position.z)+0.5)continue;if(!btm&&o.beh!=='turtle'&&f.userData.sinker)continue;
         const d=f.position.distanceTo(o.pos);if(d<bestF){bestF=d;chasing=f;}}
-      if(chasing&&bestF<(o.beh==='mid'?0.3:0.18)){scene.remove(chasing);foods.splice(foods.indexOf(chasing),1);chasing=null;}}
+      if(chasing&&bestF<(o.beh==='mid'?0.3:o.beh==='turtle'?0.4:0.18)){scene.remove(chasing);foods.splice(foods.indexOf(chasing),1);chasing=null;}}
 
-    if(o.beh==='school'){
+    if(o.beh==='jelly'){
+      o.flap+=dt*(night?2.2:3.2);flowAt(o.pos.x,o.pos.y,o.pos.z,t,flw);const pu=Math.max(0,Math.sin(o.flap)),sy0=soilY(o.pos.x,o.pos.z);
+      let vy=pu*pu*0.42-0.08;if(o.pos.y<sy0+1.3)vy+=0.12;if(o.pos.y>WATER-0.6)vy-=0.16;
+      o.vel.set(flw.x*0.8+Math.sin(t*0.3+o.ph)*0.05,vy+flw.y*0.4,flw.z*0.8+Math.cos(t*0.27+o.ph)*0.05);if(o.scare>0)o.vel.addScaledVector(o.scareDir,0.6);
+    }else if(o.beh==='school'){
       // boids: cohesion + alignment + separation + goal + avoid angels + walls
       const coh=V(0,0,0),ali=V(0,0,0),sep=V(0,0,0),st=V(0,0,0);let n=0;
-      for(const q of tetras){if(q===o)continue;const d=o.pos.distanceTo(q.pos);
+      for(const q of tetras){if(q===o||q.kind!==o.kind)continue;const d=o.pos.distanceTo(q.pos);
         if(d<1.6){coh.add(q.pos);ali.add(q.vel);n++;}
         if(d<0.35&&d>0.001)sep.addScaledVector(tmp.subVectors(o.pos,q.pos),1/(d*d));}
       if(n){coh.divideScalar(n).sub(o.pos);st.addScaledVector(coh,0.8);ali.divideScalar(n).sub(o.vel);st.addScaledVector(ali,1.2);}
       st.addScaledVector(sep,0.02);
-      tmp.subVectors(chasing?chasing.position:school.t,o.pos).normalize();st.addScaledVector(tmp,chasing?2.2:0.5);
+      tmp.subVectors(chasing?chasing.position:schools[o.kind].t,o.pos).normalize();st.addScaledVector(tmp,chasing?2.2:0.5);
       for(const a of bigs){const d=o.pos.distanceTo(a.pos);if(d<1.3){tmp.subVectors(o.pos,a.pos).normalize();st.addScaledVector(tmp,(1.3-d)*4);}}
       const sy0=soilY(o.pos.x,o.pos.z);
       if(o.pos.x>4.8)st.x-=(o.pos.x-4.8)*5;if(o.pos.x<-4.8)st.x-=(o.pos.x+4.8)*5;
@@ -1073,7 +1180,7 @@ function animate(){
       if(o.pos.y>WATER-0.6)st.y-=(o.pos.y-WATER+0.6)*5;if(o.pos.y<sy0+0.7)st.y+=(sy0+0.7-o.pos.y)*5;
       if(o.scare>0)st.addScaledVector(o.scareDir,4);
       o.vel.addScaledVector(st,dt*2.2);
-      const maxS=(chasing?1.8:1.3)*(night&&!chasing?0.35:1)+(o.scare>0?2.2:0),minS=night?0.15:0.45;
+      const maxS=(chasing?1.8:1.3)*(o.base/1.1)*(night&&!chasing?0.35:1)+(o.scare>0?2.2:0),minS=night?0.15:0.45;
       const sp=o.vel.length();if(sp>maxS)o.vel.multiplyScalar(maxS/sp);else if(sp<minS&&sp>1e-4)o.vel.multiplyScalar(minS/sp);
     }else{
       let speed=o.base;
@@ -1087,6 +1194,15 @@ function animate(){
           else newTarget(o);}}
         if(o.flee&&o.flee.mode==='chase'){tmp.subVectors(o.pos,o.flee.pos);tmp.y=0;tmp.normalize();o.target.copy(o.pos).addScaledVector(tmp,2.5);speed=o.base*2.1;o.mode='cruise';}
         else o.flee=null;
+      }else if(o.beh==='turtle'){o.breath-=dt;const sy0=soilY(o.pos.x,o.pos.z);
+        if(o.tmode==='walk'){o.timer-=dt;if(o.pause>0){o.pause-=dt;speed=0;if(o.pause<=0)newTarget(o);}else if(o.timer<=0||Math.hypot(o.pos.x-o.target.x,o.pos.z-o.target.z)<0.3)o.pause=rnd(2,6);
+          o.target.y=sy0+SP.turtle.ymin;if(o.breath<=0){o.tmode='up';o.pause=0;o.target.set(o.pos.x+rnd(-1,1),WATER-0.28,o.pos.z+rnd(-0.5,0.5));}}
+        else if(o.tmode==='up'){speed=0.6;if(o.pos.y>WATER-0.45){o.tmode='air';o.airT=rnd(2.5,5);}}
+        else if(o.tmode==='air'){speed=0.03;o.airT-=dt;if(o.airT<=0){o.tmode='down';const x=rnd(-4.5,4.5),z=rnd(0,1.9);o.target.set(x,soilY(x,z)+0.2,z);}}
+        else{speed=0.45;if(o.pos.y<sy0+SP.turtle.ymin+0.15){o.tmode='walk';o.breath=rnd(25,50);newTarget(o);}}
+      }else if(o.beh==='glass'){
+        if(o.pause>0){o.pause-=dt;speed=0;o.graze=true;if(o.pause<=0){o.graze=false;newTarget(o);}}
+        else{o.graze=false;o.timer-=dt;if(o.pos.distanceTo(o.target)<0.2)o.pause=rnd(6,16);else if(o.timer<=0)newTarget(o);}
       }else if(o.beh==='top'){o.timer-=dt;if(o.timer<=0||o.pos.distanceTo(o.target)<0.4)newTarget(o);}
       else{o.timer-=dt;
         if(o.pause>0){o.pause-=dt;speed=0;if(o.pause<=0)newTarget(o);}
@@ -1095,7 +1211,8 @@ function animate(){
       if(o.beh==='bottom'||o.beh==='shrimp')o.target.y=soilY(o.target.x,o.target.z)+SP[o.kind].ymin+0.03;
       des.subVectors(o.target,o.pos);const dist=des.length();
       des.normalize().multiplyScalar(speed*Math.min(1,dist/0.5+0.25));
-      if(o.scare>0)des.copy(o.scareDir).multiplyScalar(o.beh==='mid'?2.6:2.2);
+      if(o.graze&&o.gn)des.set(o.gn.z?Math.sin(t*0.4+o.ph)*0.04:0,0.03*Math.sin(t*0.25+o.ph),o.gn.x?Math.sin(t*0.4+o.ph)*0.04:0);
+      if(o.scare>0){des.copy(o.scareDir).multiplyScalar(o.beh==='mid'?2.6:2.2);o.graze=false;o.pause=0;}
       des.y=Math.max(-0.5,Math.min(0.5,des.y));
       o.vel.lerp(des,Math.min(1,dt*(o.scare>0?4:1.4)));
     }
@@ -1103,19 +1220,22 @@ function animate(){
     if(FLOW_K[o.beh]){flowAt(o.pos.x,o.pos.y,o.pos.z,t,flw);o.pos.addScaledVector(flw,dt*FLOW_K[o.beh]);}
     const sy=soilY(o.pos.x,o.pos.z);
     const S=SP[o.kind];const yMin=sy+S.ymin,yMax=S.ymax>0?WATER-S.ymax:sy-S.ymax;
-    o.pos.x=Math.max(-5.5,Math.min(5.5,o.pos.x));o.pos.y=Math.max(yMin,Math.min(yMax,o.pos.y));o.pos.z=Math.max(-2.0,Math.min(2.15,o.pos.z));
+    const ex=S.edge?5.88:5.5;o.pos.x=Math.max(-ex,Math.min(ex,o.pos.x));o.pos.y=Math.max(yMin,Math.min(yMax,o.pos.y));o.pos.z=Math.max(S.edge?-2.38:-2.0,Math.min(S.edge?2.38:2.15,o.pos.z));
     o.root.position.copy(o.pos);
-    if(o.vel.lengthSq()>0.002){look.copy(o.pos).add(tmp.set(o.vel.x,o.vel.y*S.pitch,o.vel.z));
+    if(o.beh==='jelly'){_e.set(o.vel.z*0.8,0,-o.vel.x*0.8);_q2.setFromEuler(_e);o.root.quaternion.slerp(_q2,Math.min(1,dt*2));}
+    else if(o.graze&&o.gn){const f=tmp.set(o.gn.x?0:Math.sin(t*0.2+o.ph)*0.25,1,o.gn.x?Math.sin(t*0.2+o.ph)*0.25:0).normalize();const xA=V(0,0,0).crossVectors(o.gn,f).normalize(),zA=V(0,0,0).crossVectors(xA,o.gn);
+      _m4.makeBasis(xA,o.gn,zA);_q2.setFromRotationMatrix(_m4);o.root.quaternion.slerp(_q2,Math.min(1,dt*3));}
+    else if(o.vel.lengthSq()>0.002){look.copy(o.pos).add(tmp.set(o.vel.x,o.vel.y*S.pitch,o.vel.z));
       const q=o.root.quaternion.clone();o.root.lookAt(look);const q2=o.root.quaternion.clone();o.root.quaternion.copy(q).slerp(q2,Math.min(1,dt*(o.beh==='school'?6:o.scare>0?8:3)));}
     // yaw rate -> body curve while turning
     tmp.set(0,0,1).applyQuaternion(o.root.quaternion);const yaw=Math.atan2(tmp.x,tmp.z);let dy=yaw-o.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));o.yaw=yaw;
     o.turn+=(dy/Math.max(dt,1e-3)-o.turn)*Math.min(1,dt*6);
     const v=o.vel.length();const rel=Math.min(2,v/o.base);
     o.wave+=dt*(S.freq+(S.freq?v*7:0));
-    o.flap+=dt*(o.beh==='mid'?(rel<0.3?7:4):o.beh==='shrimp'?5:9);
+    if(o.beh!=='jelly')o.flap+=dt*(o.beh==='mid'?(rel<0.3?7:4):o.beh==='turtle'?(o.tmode==='walk'?(v>0.05?3:0.4):6):o.beh==='shrimp'?5:o.graze?1:9);
     const amp=o.bendAmp*(0.3+0.9*rel),curve=Math.max(-0.28,Math.min(0.28,o.turn*0.09));
-    const wig=o.beh==='shrimp'?0:Math.sin(o.wave+1.2)*0.03*rel;
-    const bob=(o.beh!=='bottom'&&o.beh!=='shrimp')?Math.sin(t*1.2+o.ph)*0.03*o.sc:0;
+    const wig=(o.beh==='shrimp'||o.beh==='jelly'||o.beh==='turtle'||o.graze)?0:Math.sin(o.wave+1.2)*0.03*rel;
+    const bob=(o.beh==='mid'||o.beh==='school'||o.beh==='top'||(o.beh==='turtle'&&o.tmode==='air'))?Math.sin(t*1.2+o.ph)*0.03*o.sc:0;
     const peck=(o.beh==='shrimp'&&o.pause>0)?0.12+0.08*Math.sin(t*7+o.ph):0;
     writeInstance(o,amp,curve,o.flap,wig,bob,peck);
   }
@@ -1137,7 +1257,7 @@ function animate(){
     if(fps<26){applyQuality('low',false);toast('裝置較吃力，已自動切換為省電畫質（右上可切回）');}}}
 
   if(showLabels&&!follow){const w=innerWidth,h=innerHeight;
-    for(const L of labels){tmp.copy(L.pos);if(L.fish)tmp.y+=L.beh==='mid'?0.95:L.beh==='shrimp'?0.15:0.3;tmp.project(camera);
+    for(const L of labels){tmp.copy(L.pos);if(L.fish)tmp.y+=L.fish==='betta'?0.45:L.beh==='mid'?0.95:L.beh==='turtle'?0.5:L.beh==='shrimp'?0.15:0.3;tmp.project(camera);
       if(tmp.z>1){L.el.style.display='none';continue;}L.el.style.display='';L.el.style.left=((tmp.x+1)/2*w)+'px';L.el.style.top=((1-tmp.y)/2*h-4)+'px';}}
 }
 animate();
