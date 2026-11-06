@@ -72,6 +72,31 @@
   .w.info{background:rgba(120,200,255,.1);border:1px solid rgba(120,200,255,.35)}
   .w.ok{background:rgba(120,255,170,.08);border:1px solid rgba(120,255,170,.3)}
   .tip{font-size:13px;opacity:.85}
+  #fishPanel h4{margin:18px 0 6px;color:#8dffb0;font-size:14.5px}
+  .saverow{display:flex;gap:8px;margin:6px 0 4px}
+  .saverow input{flex:1;min-width:0;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;font-size:16px}
+  .saverow button,.sv button,.sharebtn{border:0;border-radius:10px;padding:9px 12px;background:rgba(255,255,255,.12);color:#fff;font-size:13px;white-space:nowrap}
+  .sv{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+  .sv .nm{flex:1;min-width:0}.sv .nm b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sv .nm small{opacity:.7;font-size:12px}
+  .sv button.del.arm{background:#b8443a}
+  .sharebtn{display:block;width:100%;margin-top:10px;padding:11px;background:rgba(141,255,176,.16);font-size:14px}
+  #feedBar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 92px);display:none;align-items:center;gap:6px;background:rgba(40,24,6,.88);border:1px solid rgba(255,190,90,.6);border-radius:999px;padding:6px 6px 6px 12px;font-size:13px;white-space:nowrap;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:3}
+  #feedBar button{border:0;border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(255,255,255,.12);color:#fff}
+  #feedBar button.on{background:#e8a33a;color:#2a1600;font-weight:700}
+  #moreMenu{position:fixed;right:max(12px,calc(50% - 200px));bottom:calc(env(safe-area-inset-bottom) + 92px);display:none;flex-direction:column;min-width:200px;background:rgba(6,24,18,.96);border:1px solid var(--line);border-radius:16px;padding:6px;z-index:4;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #moreMenu button{appearance:none;border:0;background:none;color:var(--txt);text-align:left;font-size:14px;padding:11px 12px;border-radius:10px;display:flex;justify-content:space-between;gap:12px}
+  #moreMenu button:active{background:rgba(255,255,255,.08)}
+  #moreMenu button i{font-style:normal;font-size:12px;opacity:.7}
+  #bLbl i::after,#bSound i::after{content:'關'}#bLbl.on i::after,#bSound.on i::after{content:'開';color:#8dffb0}
+  #shot{position:fixed;inset:0;background:rgba(0,8,6,.82);display:none;align-items:center;justify-content:center;z-index:12;padding:16px}
+  #shot .in{max-width:640px;width:100%;text-align:center}
+  #shot img{max-width:100%;max-height:68vh;object-fit:contain;border-radius:14px;border:1px solid var(--line);box-shadow:0 10px 40px #000}
+  #shot .tip{margin:8px 0}
+  #shot .btns{display:flex;gap:10px;justify-content:center}
+  #shot button{border:0;border-radius:12px;padding:11px 18px;font-size:15px;background:rgba(255,255,255,.14);color:#fff}
+  #shot #shotSave{background:#1f6e52}
+  #flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:11;transition:opacity .35s}
+  body.saver #top,body.saver #bar,body.saver #labels,body.saver #follow,body.saver #feedBar,body.saver #moreMenu,body.saver #card,body.saver #hint{display:none!important}
   #hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 96px);font-size:12px;opacity:.7;transition:opacity 1s;pointer-events:none;text-shadow:0 1px 4px #000;white-space:nowrap}
 </style>
 </head>
@@ -88,17 +113,27 @@
   </div>
 </div>
 <div id="labels"></div>
+<div id="moreMenu">
+  <button id="bLbl" class="on">🏷️ 設備標示<i></i></button>
+  <button id="bSound">🔊 環境音效<i></i></button>
+  <button id="bSaver">🖥️ 螢幕保護模式</button>
+  <button id="bShare">📤 分享這缸</button>
+  <button id="bInfo">📋 養缸須知</button>
+</div>
+<div id="shot"><div class="in"><img id="shotImg" alt="魚缸照片"><div class="tip">iPhone 也可以長按照片儲存</div><div class="btns"><button id="shotSave">📤 分享／儲存</button><button id="shotX">關閉</button></div></div></div>
+<div id="flash"></div>
 <div id="toast"></div>
-<div id="hint">拖曳旋轉 · 點魚跟拍 · 點玻璃嚇魚</div>
+<div id="hint">拖曳旋轉 · 點魚跟拍 · 點玻璃嚇魚 · ⋯ 有更多功能</div>
+<div id="feedBar">🍤 點水面放飼料<button id="fdFlake" class="on">浮性飼料</button><button id="fdSink">沉底錠</button><button id="fdX">✕</button></div>
 <div id="follow">🎥 跟拍：<b id="fName"></b><button id="fInfo">說明</button><button id="fX">✕ 結束</button></div>
 <div id="card"><button class="x" id="cardX">×</button><h3 id="cT"></h3><div id="cB"></div></div>
 <div id="bar">
   <button id="bFeed"><span>🍤</span>餵食</button>
   <button id="bNight"><span>🌙</span>夜間</button>
   <button id="bAir" class="on"><span>🫧</span>打氣</button>
-  <button id="bLbl" class="on"><span>🏷️</span>標示</button>
   <button id="bFish"><span>🐠</span>魚群</button>
-  <button id="bInfo"><span>📋</span>須知</button>
+  <button id="bPhoto"><span>📷</span>拍照</button>
+  <button id="bMore"><span>⋯</span>更多</button>
 </div>
 <div id="fishPanel"><div class="in">
   <h2>管理魚群</h2>
@@ -108,6 +143,10 @@
   <div class="tip" id="tempTip"></div>
   <div id="warns"></div>
   <div id="rows"></div>
+  <h4>我的魚缸</h4>
+  <div class="saverow"><input id="tankName" maxlength="20" placeholder="幫目前這缸取個名字"><button id="tankSave">💾 儲存</button></div>
+  <div id="savedList"></div>
+  <button class="sharebtn" id="tankShare">📤 分享目前這缸的連結</button>
   <button class="close" id="fishDone">完成</button>
 </div></div>
 <div id="sheet"><div class="in">
@@ -163,6 +202,33 @@ const card=$('card'),sheet=$('sheet');
 $('cardX').addEventListener('click',()=>{card.style.display='none';});
 $('sheetDone').addEventListener('click',()=>{sheet.style.display='none';});
 
+// ---------- underwater shading for every in-water material ----------
+// 取代 three.js 的霧：Beer–Lambert 依 RGB 分別吸收（紅光最快消失），並在世界座標投射會流動的光紋（caustics），以乘法疊在所有水中物體上。
+// 借用 Fog 的 uniform：fogNear = 水中路徑起點距離，fogFar = 時間（驅動光紋），fogColor = 水中散射光顏色。
+THREE.ShaderChunk.fog_pars_vertex='#ifdef USE_FOG\n varying float fogDepth;\n varying vec3 vCausticPos;\n#endif';
+THREE.ShaderChunk.fog_vertex='#ifdef USE_FOG\n fogDepth = - mvPosition.z;\n vec4 cwp = vec4( transformed, 1.0 );\n #ifdef USE_INSTANCING\n cwp = instanceMatrix * cwp;\n #endif\n vCausticPos = ( modelMatrix * cwp ).xyz;\n#endif';
+THREE.ShaderChunk.fog_pars_fragment=`#ifdef USE_FOG
+ uniform vec3 fogColor; varying float fogDepth; varying vec3 vCausticPos;
+ #ifdef FOG_EXP2
+ uniform float fogDensity;
+ #else
+ uniform float fogNear; uniform float fogFar;
+ #endif
+ float cLayer(vec2 p,float t){
+  float a=sin(p.x*3.0+sin(p.y*2.0+t*0.8)*1.5+t*0.5)+sin(p.y*3.0+sin(p.x*2.0+1.0-t*0.7)*1.5-t*0.4)+sin((p.x+p.y)*2.0+sin(p.x*5.0+t)*0.6);
+  return pow(1.0-min(1.0,abs(a)),3.0);}
+ float causticAt(vec3 wp,float t){vec2 uv=wp.xz*0.9+wp.y*0.12;return 0.6*cLayer(uv,t)+0.4*cLayer(uv*1.7+vec2(3.1,1.7),t*1.3);}
+#endif`;
+THREE.ShaderChunk.fog_fragment=`#ifdef USE_FOG
+ #ifndef FOG_EXP2
+ float uwDay=clamp(fogColor.g*6.5,0.0,1.0);
+ float uwC=causticAt(vCausticPos,fogFar)*smoothstep(5.8,4.0,vCausticPos.y)*0.7+causticAt(vCausticPos,fogFar)*0.3;
+ gl_FragColor.rgb*=0.86+0.9*uwC*uwDay;
+ float uwD=max(fogDepth-fogNear,0.0);
+ vec3 uwT=exp(-vec3(0.085,0.032,0.05)*uwD);
+ gl_FragColor.rgb=gl_FragColor.rgb*uwT+fogColor*(1.0-uwT);
+ #endif
+#endif`;
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(innerWidth,innerHeight);
@@ -216,7 +282,6 @@ const causTex=(function(){const s=256;const c=document.createElement('canvas');c
     const val=Math.pow(1-Math.min(1,Math.abs(a)),3);const i=(y*s+x)*4;img.data[i]=img.data[i+1]=img.data[i+2]=255*val;img.data[i+3]=255;}
   g.putImageData(img,0,0);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(4,2);return t;})();
 const causMat=new THREE.MeshBasicMaterial({map:causTex,transparent:true,opacity:.28,blending:THREE.AdditiveBlending,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2});
-scene.add(new THREE.Mesh(soilG,causMat));
 
 // stones
 function makeStone(x,z,r,sy,seed){const g=new THREE.IcosahedronGeometry(r,2);const p=g.attributes.position;const col=[];const c=new THREE.Color();
@@ -309,7 +374,7 @@ function bodyMesh(sx,sy,sz,colorFn,flatBelly,matOpts){const g=new THREE.SphereGe
 function finM(color,op){return new THREE.MeshPhongMaterial({color,side:THREE.DoubleSide,transparent:true,opacity:op,depthWrite:false,shininess:60});}
 function eyes(body,x,y,z,r,iris){const eW=new THREE.MeshPhongMaterial({color:iris,shininess:90}),eB=new THREE.MeshPhongMaterial({color:0x050505,shininess:140,specular:0xffffff});
   for(const s of[-1,1]){const e=new THREE.Mesh(new THREE.SphereGeometry(r,12,10),eW);e.position.set(s*x,y,z);body.add(e);(body.userData.skip=body.userData.skip||[]).push(e);const pu=new THREE.Mesh(new THREE.SphereGeometry(r*0.6,10,8),eB);pu.position.set(s*r*0.45,0,r*0.35);e.add(pu);}}
-function pectorals(body,x,y,z,r,mat){const arr=[];for(const s of[-1,1]){const pv=new THREE.Group();pv.position.set(s*x,y,z);const g=new THREE.CircleGeometry(r,10);g.scale(1,0.55,1);g.translate(-r*0.8,0,0);g.rotateY(-Math.PI/2);pv.add(new THREE.Mesh(g,mat));body.add(pv);arr.push({pv,s});}return arr;}
+function pectorals(body,x,y,z,r,mat){const arr=[];for(const s of[-1,1]){const pv=new THREE.Group();pv.userData.part=s<0?1:2;pv.position.set(s*x,y,z);const g=new THREE.CircleGeometry(r,10);g.scale(1,0.55,1);g.translate(-r*0.8,0,0);g.rotateY(-Math.PI/2);pv.add(new THREE.Mesh(g,mat));body.add(pv);arr.push({pv,s});}return arr;}
 
 function makeAngel(morph){
   const root=new THREE.Group(),body=new THREE.Group();root.add(body);
@@ -327,7 +392,7 @@ function makeAngel(morph){
   const tail=new THREE.Group();tail.position.z=-0.64;body.add(tail);
   tail.add(new THREE.Mesh(finShape([[0,0.05],[-0.45,0.5],[-0.7,0.66],[-0.52,0,-0.7,-0.66],[-0.45,-0.5],[0,-0.05]]),fm));
   const vm=morph==='black'?finM(0x141418,0.9):finM(morph==='gold'?0xf5c860:0xf0f0f0,0.75);
-  const vents=[];for(const s of[-1,1]){const v=new THREE.Group();v.position.set(s*0.03,-0.42,0.22);v.add(new THREE.Mesh(finShape([[0.02,0],[-0.04,0],[-0.5,-1.35],[-0.45,-1.37]]),vm));body.add(v);vents.push(v);}
+  const vents=[];for(const s of[-1,1]){const v=new THREE.Group();v.userData.part=3;v.position.set(s*0.03,-0.42,0.22);v.add(new THREE.Mesh(finShape([[0.02,0],[-0.04,0],[-0.5,-1.35],[-0.45,-1.37]]),vm));body.add(v);vents.push(v);}
   eyes(body,0.075,0.17,0.5,0.06,morph==='black'?0x553322:0xd02a1a);
   return{root,body,tail,pects:pectorals(body,0.15,-0.08,0.25,0.16,finM(0xffffff,0.25)),vents};
 }
@@ -353,19 +418,59 @@ function makeCory(){
   return{root,body,tail,pects:pectorals(body,0.24,-0.22,0.4,0.2,fm)};
 }
 
-// body-wave bending via vertex shader (S-curve swimming)
-function setupBend(f,front,len,amp){
-  f.u={uPhase:{value:0},uAmp:{value:amp},uCurve:{value:0},uFront:{value:front},uLen:{value:len}};
+// ---------- instanced fish rendering ----------
+// 每個「品種＋花色」把整隻魚烘焙成一個幾何，用 InstancedMesh 一次畫完（不透明身體一層、半透明鰭一層）。
+// 身體 S 形擺動、胸鰭拍動、腹鰭擺動、蝦的觸角，全部在 vertex shader 裡算；每隻魚只傳 aAnim = (波相位, 擺幅, 轉彎彎曲, 鰭相位)。
+function bakeModel(f){
   f.root.updateMatrixWorld(true);
-  const inv=new THREE.Matrix4().copy(f.body.matrixWorld).invert();
-  const skip=new Set();f.pects.forEach(({pv})=>pv.traverse(o=>skip.add(o)));(f.body.userData.skip||[]).forEach(e=>e.traverse(o=>skip.add(o)));
-  const list=[];f.body.traverse(m=>{if(m.isMesh&&!skip.has(m))list.push(m);});
-  for(const m of list){const m2b=new THREE.Matrix4().multiplyMatrices(inv,m.matrixWorld),b2m=m2b.clone().invert();
-    const mat=m.material.clone();m.material=mat;
-    mat.onBeforeCompile=sh=>{Object.assign(sh.uniforms,f.u);sh.uniforms.uM2B={value:m2b};sh.uniforms.uB2M={value:b2m};
-      sh.vertexShader='uniform float uPhase;uniform float uAmp;uniform float uCurve;uniform float uFront;uniform float uLen;uniform mat4 uM2B;uniform mat4 uB2M;\n'+
-        sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec4 bp=uM2B*vec4(transformed,1.0);float zt=max(0.0,(uFront-bp.z)/uLen);bp.x+=uAmp*zt*zt*sin(uPhase-zt*4.0)+uCurve*zt*zt;transformed=(uB2M*bp).xyz;');};}
+  const inv=new THREE.Matrix4().copy(f.body.matrixWorld).invert();const out={op:[],tr:[]};
+  f.body.traverse(m=>{if(!m.isMesh)return;
+    let part=0;const pivot=V(0,0,0);for(let a=m;a&&a!==f.body;a=a.parent){if(a.userData.part){part=a.userData.part;pivot.copy(a.position);break;}}
+    const g=m.geometry.index?m.geometry.toNonIndexed():m.geometry.clone();
+    g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv,m.matrixWorld));
+    const n=g.attributes.position.count,mat=m.material,mc=mat.color,tr=!!mat.transparent,al=tr?mat.opacity:1,src=g.attributes.color;
+    const col=new Float32Array(n*4),pa=new Float32Array(n),pv=new Float32Array(n*3);
+    for(let i=0;i<n;i++){col[i*4]=(src?src.getX(i):1)*mc.r;col[i*4+1]=(src?src.getY(i):1)*mc.g;col[i*4+2]=(src?src.getZ(i):1)*mc.b;col[i*4+3]=al;
+      pa[i]=part;pv[i*3]=pivot.x;pv[i*3+1]=pivot.y;pv[i*3+2]=pivot.z;}
+    out[tr?'tr':'op'].push({pos:g.attributes.position.array,nor:g.attributes.normal.array,col,pa,pv});g.dispose();});
+  f.body.traverse(m=>{if(m.isMesh){m.geometry.dispose();m.material.dispose();}});
+  const merge=list=>{if(!list.length)return null;const cat=(k)=>{let n=0;list.forEach(x=>n+=x[k].length);const a=new Float32Array(n);let o=0;list.forEach(x=>{a.set(x[k],o);o+=x[k].length;});return a;};
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(cat('pos'),3));g.setAttribute('normal',new THREE.BufferAttribute(cat('nor'),3));
+    g.setAttribute('color',new THREE.BufferAttribute(cat('col'),4));g.setAttribute('part',new THREE.BufferAttribute(cat('pa'),1));g.setAttribute('pivot',new THREE.BufferAttribute(cat('pv'),3));return g;};
+  return{op:merge(out.op),tr:merge(out.tr)};
 }
+const FISH_VS=`
+vec3 p=transformed;
+if(part>0.5){vec3 q=p-pivot;float ang,c,sn;
+  if(part<2.5){ang=(part<1.5?-1.0:1.0)*(0.5+0.4*sin(aAnim.w));c=cos(ang);sn=sin(ang);q=vec3(c*q.x+sn*q.z,q.y,-sn*q.x+c*q.z);}
+  else if(part<3.5){ang=0.12*sin(aAnim.w*0.3);c=cos(ang);sn=sin(ang);q=vec3(q.x,c*q.y-sn*q.z,sn*q.y+c*q.z);}
+  else{ang=sign(pivot.x)*0.2*sin(aAnim.w*0.5);c=cos(ang);sn=sin(ang);q=vec3(c*q.x+sn*q.z,q.y,-sn*q.x+c*q.z);}
+  p=q+pivot;}
+float zt=max(0.0,(uFront-p.z)/uLen);
+p.x+=aAnim.y*zt*zt*sin(aAnim.x-zt*4.0)+aAnim.z*zt*zt;
+transformed=p;`;
+function patchFish(mat,front,len){mat.customProgramCacheKey=()=>'fish-instanced-v1';
+  mat.onBeforeCompile=sh=>{sh.uniforms.uFront={value:front};sh.uniforms.uLen={value:len};
+    sh.vertexShader='attribute vec4 aAnim;attribute float part;attribute vec3 pivot;uniform float uFront;uniform float uLen;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n'+FISH_VS);};}
+const fishGroups={};
+const _m4=new THREE.Matrix4(),_q=new THREE.Quaternion(),_q2=new THREE.Quaternion(),_e=new THREE.Euler(),_p=new THREE.Vector3(),_s=new THREE.Vector3();
+function makeModel(kind,v){return kind==='angel'?makeAngel(v):kind==='discus'?makeDiscus(v):kind==='tetra'?makeTetra():kind==='guppy'?makeGuppy(v):kind==='cory'?makeCory():makeShrimp();}
+function getGroup(kind,v){const key=kind+':'+(v||'');if(fishGroups[key])return fishGroups[key];
+  const S=SP[kind],baked=bakeModel(makeModel(kind,v)),cap=S.max;
+  const anim=new THREE.InstancedBufferAttribute(new Float32Array(cap*4),4);anim.setUsage(THREE.DynamicDrawUsage);
+  const meshes=[];
+  for(const which of['op','tr']){const g=baked[which];if(!g)continue;g.setAttribute('aAnim',anim);
+    const mat=which==='op'?new THREE.MeshPhongMaterial({vertexColors:true,shininess:80,specular:0x555555,emissive:kind==='tetra'?0x061418:0x000000})
+                          :new THREE.MeshPhongMaterial({vertexColors:true,transparent:true,depthWrite:false,side:THREE.DoubleSide,shininess:60,emissive:kind==='guppy'?0x180808:0x000000});
+    patchFish(mat,S.bend[0],S.bend[1]);
+    const im=new THREE.InstancedMesh(g,mat,cap);im.count=0;im.frustumCulled=false;im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    if(which==='op')im.castShadow=true;if(which==='tr')im.renderOrder=2;scene.add(im);meshes.push(im);}
+  return fishGroups[key]={key,meshes,anim,items:[]};}
+function writeInstance(o,amp,curve,flap,wig,bob,peck){
+  _p.copy(o.pos);_p.y+=bob;_q.copy(o.root.quaternion);if(wig||peck){_q2.setFromEuler(_e.set(peck,wig,0));_q.multiply(_q2);}
+  _s.setScalar(o.sc);_m4.compose(_p,_q,_s);const g=o.grp;for(const im of g.meshes)im.setMatrixAt(o.idx,_m4);
+  g.anim.setXYZW(o.idx,o.wave,amp,curve,flap);g.dirty=true;}
+function flushGroups(){for(const k in fishGroups){const g=fishGroups[k];if(!g.dirty)continue;g.dirty=false;g.anim.needsUpdate=true;for(const im of g.meshes){im.count=g.items.length;im.instanceMatrix.needsUpdate=true;}}}
 function makeDiscus(v){
   const root=new THREE.Group(),body=new THREE.Group();root.add(body);
   const P={turq:[0x2fb8b0,0x8a3a22],red:[0xe8502a,0xf6d8b0],gold:[0xf2c440,0xe07a20]}[v];
@@ -402,14 +507,13 @@ function makeShrimp(){
   const fan=new THREE.Mesh(finShape([[0,0],[-0.25,0.14],[-0.3,0,-0.25,-0.14],[0,0]]),pale);fan.rotation.z=Math.PI/2;tail.add(fan);
   const eb=new THREE.MeshPhongMaterial({color:0x050505,shininess:120,specular:0xffffff});
   for(const sg of[-1,1]){const e=new THREE.Mesh(new THREE.SphereGeometry(0.05,8,6),eb);e.position.set(sg*0.13,0.14,0.72);body.add(e);(body.userData.skip=body.userData.skip||[]).push(e);}
-  const lineM=new THREE.LineBasicMaterial({color:0x4a4440});
-  const ants=[];for(const sg of[-1,1])for(const len of[1.3,0.5]){const g=new THREE.BufferGeometry().setFromPoints(new THREE.CatmullRomCurve3([V(0,0,0),V(sg*0.12,0.1,0.4),V(sg*0.35*len,0.2,0.9*len),V(sg*0.55*len,0.1,1.25*len)]).getPoints(12));
-    const a=new THREE.Line(g,lineM);const pv=new THREE.Group();pv.position.set(sg*0.06,0.12,0.8);pv.add(a);body.add(pv);ants.push({pv,sg,ph:rnd(0,6)});}
-  const lp=[];for(let i=0;i<5;i++){const z=0.55-i*0.13;for(const sg of[-1,1]){lp.push(sg*0.12,-0.1,z,sg*0.28,-0.34,z+0.06);}}
-  for(let i=0;i<5;i++){const z=-0.05-i*0.17;for(const sg of[-1,1]){lp.push(sg*0.08,-0.12,z,sg*0.1,-0.24,z-0.04);}}
-  const lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.Float32BufferAttribute(lp,3));body.add(new THREE.LineSegments(lg,lineM));
-  return{root,body,tail,pects:[],anim(t,o){ants.forEach(a=>{a.pv.rotation.y=a.sg*0.18*Math.sin(t*2.5+a.ph);a.pv.rotation.x=0.12*Math.sin(t*1.7+a.ph);});
-    body.rotation.x=o.pause>0?0.12+0.08*Math.sin(t*7+o.ph):0;}};
+  const limb=new THREE.MeshPhongMaterial({color:0x3a3430});
+  const tube=(pts,r)=>new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),12,r,3,false),limb);
+  for(const sg of[-1,1])for(const len of[1.3,0.5]){const pv=new THREE.Group();pv.userData.part=4;pv.position.set(sg*0.06,0.12,0.8);
+    pv.add(tube([V(0,0,0),V(sg*0.12,0.1,0.4),V(sg*0.35*len,0.2,0.9*len),V(sg*0.55*len,0.1,1.25*len)],0.012));body.add(pv);}
+  for(let i=0;i<5;i++){const z=0.55-i*0.13;for(const sg of[-1,1])body.add(tube([V(sg*0.12,-0.1,z),V(sg*0.22,-0.2,z+0.03),V(sg*0.28,-0.34,z+0.06)],0.014));}
+  for(let i=0;i<5;i++){const z=-0.05-i*0.17;for(const sg of[-1,1])body.add(tube([V(sg*0.08,-0.12,z),V(sg*0.09,-0.18,z-0.02),V(sg*0.1,-0.24,z-0.04)],0.014));}
+  return{root,body,tail,pects:[]};
 }
 
 // species table (beh: mid=中層大型魚, school=群游, top=中上層, bottom=底棲, shrimp=蝦)
@@ -429,10 +533,8 @@ const vIdx={};
 const fishes=[],tetras=[],bigs=[];
 const school={c:V(0,3,0.8),t:V(1,3,0.8),v:V(0,0,0),timer:0};
 function spawn(kind,drop){const S=SP[kind],vs=VARIANTS[kind];const i=vIdx[kind]||0;vIdx[kind]=i+1;const v=vs?vs[i%vs.length]:null;
-  const f=kind==='angel'?makeAngel(v):kind==='discus'?makeDiscus(v):kind==='tetra'?makeTetra():kind==='guppy'?makeGuppy(v):kind==='cory'?makeCory():makeShrimp();
-  setupBend(f,...S.bend);f.root.scale.setScalar(rnd(S.scale[0],S.scale[1]));scene.add(f.root);
-  f.root.traverse(m=>{if(m.isMesh&&!m.material.transparent)m.castShadow=true;});
-  const o=Object.assign({},f,{kind,beh:S.beh,pos:V(0,0,0),vel:V(rnd(-.3,.3),0,rnd(-.3,.3)),target:V(),timer:0,pause:0,ph:rnd(0,6),
+  const grp=getGroup(kind,v);const sc=rnd(S.scale[0],S.scale[1]);
+  const o=Object.assign({},{root:new THREE.Object3D(),grp,idx:grp.items.length,sc,flap:rnd(0,6),kind,beh:S.beh,pos:V(0,0,0),vel:V(rnd(-.3,.3),0,rnd(-.3,.3)),target:V(),timer:0,pause:0,ph:rnd(0,6),
     base:S.base,bendAmp:S.bend[2],yaw:0,turn:0,wave:rnd(0,6),mode:'cruise',scare:0,scareDir:V(0,0,0),title:vs?TITLES[kind][v]:S.name});
   if(S.beh==='mid')o.pos.set(rnd(-3,3),rnd(2.2,4),rnd(-0.3,1.5));
   else if(S.beh==='school'){o.pos.set(rnd(-1.5,1.5),rnd(2.5,3.5),rnd(0,1.5));o.vel.set(rnd(0.5,1),rnd(-.1,.1),rnd(-.2,.2));}
@@ -441,8 +543,9 @@ function spawn(kind,drop){const S=SP[kind],vs=VARIANTS[kind];const i=vIdx[kind]|
   if(drop){o.pos.x=rnd(-2.5,2.5);o.pos.z=rnd(0,1.5);o.pos.y=WATER-0.4;
     if(S.beh==='bottom'||S.beh==='shrimp')o.sink=true;else{o.scare=0.7;o.scareDir.set(rnd(-.3,.3),-1,0.2).normalize();}}
   o.root.position.copy(o.pos);
+  grp.items.push(o);writeInstance(o,0,0,0,0,0,0);
   newTarget(o);fishes.push(o);if(S.beh==='school')tetras.push(o);if(S.beh==='mid')bigs.push(o);return o;}
-function despawn(o){scene.remove(o.root);o.root.traverse(m=>{if(m.geometry)m.geometry.dispose();if(m.material)m.material.dispose();});
+function despawn(o){const g=o.grp,last=g.items.pop();if(last!==o){g.items[o.idx]=last;last.idx=o.idx;writeInstance(last,0,0,0,0,0,0);}g.dirty=true;
   [fishes,tetras,bigs].forEach(a=>{const i=a.indexOf(o);if(i>=0)a.splice(i,1);});
   bigs.forEach(b=>{if(b.prey===o){b.prey=null;b.mode='cruise';}if(b.flee===o)b.flee=null;});
   if(typeof follow!=='undefined'&&follow===o)stopFollow();}
@@ -454,6 +557,13 @@ function newTarget(o){
   o.timer=rnd(3,7);}
 const counts={angel:3,discus:0,tetra:12,guppy:0,cory:4,shrimp:0};
 try{const c=JSON.parse(localStorage.getItem('aq_counts')||'null');if(c)for(const k of ORDER)if(typeof c[k]==='number')counts[k]=Math.max(0,Math.min(SP[k].max,c[k]|0));}catch(e){}
+const TCODE={angel:'a',discus:'d',tetra:'t',guppy:'g',cory:'c',shrimp:'s'};
+function encodeTank(c){return ORDER.filter(k=>c[k]).map(k=>TCODE[k]+c[k]).join('')||'0';}
+function decodeTank(str){const c={};ORDER.forEach(k=>c[k]=0);const re=/([adtgcs])(\d+)/g;let m,ok=str==='0';
+  while((m=re.exec(str))){const k=ORDER.find(q=>TCODE[q]===m[1]);c[k]=Math.min(SP[k].max,+m[2]);ok=true;}return ok?c:null;}
+let QS=null;try{QS=new URLSearchParams(location.search);}catch(e){}
+const sharedTank=QS&&QS.get('tank')?decodeTank(QS.get('tank')):null,sharedName=QS&&QS.get('name')||'';
+if(sharedTank){Object.assign(counts,sharedTank);try{localStorage.setItem('aq_counts',JSON.stringify(counts));}catch(e){}}
 for(const k of ORDER)for(let i=0;i<counts[k];i++)spawn(k,false);
 
 // ---------- glass / water ----------
@@ -553,8 +663,14 @@ const bubbleMat=new THREE.PointsMaterial({color:0xffffff,size:0.13,map:bubTex,tr
 
 // food
 const foods=[];const foodG=new THREE.SphereGeometry(0.04,6,5);const foodM=new THREE.MeshPhongMaterial({color:0xb8642a,emissive:0x301000});
-function feed(){for(let i=0;i<16;i++){const m=new THREE.Mesh(foodG,foodM);m.position.set(rnd(-3,2),WATER-0.02,rnd(-0.4,1.6));m.userData={vy:0,float:rnd(0.5,2.5),ph:rnd(0,6)};scene.add(m);foods.push(m);}
-  for(let i=0;i<4;i++){const m=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,0.04,10),new THREE.MeshPhongMaterial({color:0x6a4a2a}));m.position.set(rnd(-3,3),WATER-0.02,rnd(0.8,1.8));m.userData={vy:0,float:0,ph:0,sinker:true};scene.add(m);foods.push(m);}}
+const sinkG=new THREE.CylinderGeometry(0.1,0.1,0.04,10),sinkM=new THREE.MeshPhongMaterial({color:0x6a4a2a});
+const wRipples=[];
+function addRipple(x,z,a){wRipples.push({x,z,t0:clock.elapsedTime,a});if(wRipples.length>8)wRipples.shift();}
+function dropFood(x,z,type){
+  if(type==='sink'){const m=new THREE.Mesh(sinkG,sinkM);m.position.set(x,WATER-0.02,z);m.userData={vy:0,float:0.15,ph:0,sinker:true};scene.add(m);foods.push(m);}
+  else for(let i=0;i<7;i++){const m=new THREE.Mesh(foodG,foodM);const a=rnd(0,6.28),r=Math.sqrt(Math.random())*0.35;
+    m.position.set(x+Math.cos(a)*r,WATER-0.02,z+Math.sin(a)*r);m.userData={vy:0,float:rnd(0.8,3),ph:rnd(0,6)};scene.add(m);foods.push(m);}
+  addRipple(x,z,type==='sink'?0.09:0.05);if(typeof plop==='function')plop();}
 
 // ---------- camera ----------
 const tgt=V(0,2.7,0);let theta=0,phi=1.38,radius=17,lastUse=-99,auto=0;
@@ -575,6 +691,10 @@ let follow=null,sideSign=1;const home=V(0,2.7,0);let homeRadius=radius;
 
 function handleTap(x,y){
   ndc.set(x/innerWidth*2-1,-(y/innerHeight)*2+1);picker.setFromCamera(ndc,camera);const r=picker.ray;
+  if(feedMode){let px=null,pz=null;
+    if(Math.abs(r.direction.y)>1e-4){const k=(WATER-r.origin.y)/r.direction.y;if(k>0){const hx=r.origin.x+r.direction.x*k,hz=r.origin.z+r.direction.z*k;if(Math.abs(hx)<5.7&&Math.abs(hz)<2.3){px=hx;pz=hz;}}}
+    if(px===null){const h=picker.intersectObject(glass)[0];if(h){px=Math.max(-5.5,Math.min(5.5,h.point.x));pz=Math.max(-2,Math.min(2,h.point.z));}}
+    if(px!==null){dropFood(px,pz,feedType);feedIdle=0;}return;}
   let best=null,bestAlong=1e9;
   for(const o of fishes){const along=tmp.subVectors(o.pos,r.origin).dot(r.direction);if(along<=0)continue;
     if(r.distanceToPoint(o.pos)<SP[o.kind].hit&&along<bestAlong){best=o;bestAlong=along;}}
@@ -630,15 +750,24 @@ let showLabels=true;
 
 // buttons
 let night=false,airOn=true;
-$('bFeed').onclick=feed;
+let feedMode=false,feedType='flake',feedIdle=0;
+function setFeed(on){feedMode=on;$('feedBar').style.display=on?'flex':'none';labelBox.style.display=on||!showLabels||follow?'none':'';$('bFeed').classList.toggle('on',on);feedIdle=0;if(on){$('follow').style.visibility='hidden';card.style.display='none';}else $('follow').style.visibility='';}
+$('bFeed').onclick=()=>setFeed(!feedMode);
+$('fdX').onclick=()=>setFeed(false);
+$('fdFlake').onclick=()=>{feedType='flake';$('fdFlake').classList.add('on');$('fdSink').classList.remove('on');feedIdle=0;};
+$('fdSink').onclick=()=>{feedType='sink';$('fdSink').classList.add('on');$('fdFlake').classList.remove('on');feedIdle=0;};
 $('bNight').onclick=()=>{night=!night;$('bNight').classList.toggle('on',night);$('bNight').innerHTML=night?'<span>☀️</span>白天':'<span>🌙</span>夜間';$('hMode').textContent=night?'🌙 夜間月光':'☀️ 白天光照';};
 $('bAir').onclick=()=>{airOn=!airOn;$('bAir').classList.toggle('on',airOn);};
 $('bLbl').onclick=()=>{showLabels=!showLabels;$('bLbl').classList.toggle('on',showLabels);labelBox.style.display=showLabels&&!follow?'':'none';};
 $('bInfo').onclick=()=>{sheet.style.display='flex';};
+const moreMenu=$('moreMenu');
+$('bMore').onclick=e=>{e.stopPropagation();moreMenu.style.display=moreMenu.style.display==='flex'?'none':'flex';};
+moreMenu.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.id!=='bLbl'&&b.id!=='bSound')moreMenu.style.display='none';});
+document.addEventListener('pointerdown',e=>{if(moreMenu.style.display==='flex'&&!moreMenu.contains(e.target)&&e.target.closest('#bMore')===null)moreMenu.style.display='none';},true);
+$('bShare').onclick=()=>$('tankShare').click();
 sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.style.display='none';});
 
 // shadows on fish (opaque parts) and keep outside objects out of the underwater haze
-fishes.forEach(o=>o.root.traverse(m=>{if(m.isMesh&&!m.material.transparent)m.castShadow=true;}));
 {const wp=new THREE.Vector3();scene.traverse(m=>{if(!m.material)return;m.getWorldPosition(wp);
   const out=m.userData.outside||wp.y<-0.02||wp.y>H+0.2||Math.abs(wp.x)>W/2+0.05||Math.abs(wp.z)>D/2+0.05;
   if(out)(Array.isArray(m.material)?m.material:[m.material]).forEach(mt=>mt.fog=false);});
@@ -702,9 +831,103 @@ function renderPanel(){const c={};let load=0;ORDER.forEach(k=>{c[k]=countOf(k);l
   $('rows').innerHTML=ORDER.map(k=>{const S=SP[k];return `<div class="row"><div class="em">${S.emoji}</div><div class="nm"><b>${S.name}</b><small>${S.desc}</small></div>
     <div class="ct"><button data-k="${k}" data-d="-1" ${c[k]?'':'disabled'}>－</button><span class="n">${c[k]}</span><button data-k="${k}" data-d="1" ${c[k]>=S.max?'disabled':''}>＋</button></div></div>`;}).join('');}
 $('rows').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;setCount(b.dataset.k,countOf(b.dataset.k)+(+b.dataset.d));});
-$('bFish').onclick=()=>{renderPanel();fishPanel.style.display='flex';card.style.display='none';};
+$('bFish').onclick=()=>{renderPanel();renderSaved();fishPanel.style.display='flex';card.style.display='none';};
 fishPanel.addEventListener('click',e=>{if(e.target===fishPanel)fishPanel.style.display='none';});
 updateThermoTarget();
+// saved tanks + share link
+const curCounts=()=>{const c={};ORDER.forEach(k=>c[k]=countOf(k));return c;};
+const tankSummary=c=>ORDER.filter(k=>c[k]).map(k=>SP[k].emoji+c[k]).join(' ')||'空缸';
+function loadTanks(){try{return JSON.parse(localStorage.getItem('aq_tanks')||'[]');}catch(e){return [];}}
+function storeTanks(l){try{localStorage.setItem('aq_tanks',JSON.stringify(l));}catch(e){toast('這個瀏覽器無法儲存');}}
+function applyCounts(c){for(const k of ORDER)setCount(k,c[k]||0);}
+const esc=t=>String(t).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function renderSaved(){const l=loadTanks();$('savedList').innerHTML=l.length?l.map((x,i)=>`<div class="sv"><div class="nm"><b>${esc(x.name)}</b><small>${tankSummary(x.c)}</small></div><button data-load="${i}">載入</button><button class="del" data-del="${i}">🗑</button></div>`).join(''):'<div class="tip" style="padding:4px 0 2px">還沒有存過魚缸。</div>';}
+$('tankSave').addEventListener('click',()=>{const l=loadTanks();const name=($('tankName').value.trim()||('我的魚缸 '+(l.length+1))).slice(0,20);
+  const c=curCounts();const i=l.findIndex(x=>x.name===name);if(i>=0)l[i].c=c;else l.unshift({name,c});storeTanks(l.slice(0,20));$('tankName').value='';renderSaved();toast('已儲存「'+name+'」');});
+$('savedList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const l=loadTanks();
+  if(b.dataset.load!==undefined){const x=l[+b.dataset.load];if(x){applyCounts(x.c);toast('已載入「'+x.name+'」');}}
+  else if(b.dataset.del!==undefined){if(!b.classList.contains('arm')){b.classList.add('arm');b.textContent='確定刪除';setTimeout(()=>{if(b.isConnected){b.classList.remove('arm');b.textContent='🗑';}},3000);return;}
+    l.splice(+b.dataset.del,1);storeTanks(l);renderSaved();}});
+function shareUrl(){const base=location.href.split(/[?#]/)[0];return base+'?tank='+encodeTank(curCounts());}
+$('tankShare').addEventListener('click',()=>{const url=shareUrl(),text='來看看我的 3D 水草魚缸：'+tankSummary(curCounts());
+  const fallback=()=>{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(()=>toast('連結已複製，可以貼給朋友')).catch(showUrl);else showUrl();};
+  const showUrl=()=>{fishPanel.style.display='none';$('cT').textContent='分享連結（長按複製）';$('cB').textContent=url;card.style.display='block';};
+  if(navigator.share)navigator.share({title:'3D 水草神仙魚缸',text,url}).catch(err=>{if(!err||err.name!=='AbortError')fallback();});else fallback();});
+renderSaved();
+if(sharedTank){toast(sharedName?'已載入分享的魚缸「'+sharedName.slice(0,20)+'」':'已載入朋友分享的魚缸');try{history.replaceState(null,'',location.pathname);}catch(e){}}
+
+// ---------- sound (all generated in code, no audio files) ----------
+const AC=()=>{try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();}catch(e){}return actx;};
+let soundOn=false,ambSnd=null,bubbleT=0;
+try{soundOn=localStorage.getItem('aq_sound')==='1';}catch(e){}
+function noiseBuf(ctx,sec){const n=ctx.sampleRate*sec,b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);let last=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;last=(last+0.02*w)/1.02;d[i]=last*3.5;}return b;}
+function startAmbient(){const ctx=AC();if(!ctx||ambSnd)return;
+  const master=ctx.createGain();master.gain.value=0;master.gain.linearRampToValueAtTime(0.55,ctx.currentTime+1.5);master.connect(ctx.destination);
+  const buf=noiseBuf(ctx,4);
+  const s1=ctx.createBufferSource();s1.buffer=buf;s1.loop=true;const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=380;const g1=ctx.createGain();g1.gain.value=0.35;s1.connect(lp).connect(g1).connect(master);s1.start();
+  const s2=ctx.createBufferSource();s2.buffer=buf;s2.loop=true;s2.playbackRate.value=1.7;const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1500;bp.Q.value=0.7;
+  const g2=ctx.createGain();g2.gain.value=0.06;const lfo=ctx.createOscillator();lfo.frequency.value=0.27;const lg=ctx.createGain();lg.gain.value=0.035;lfo.connect(lg).connect(g2.gain);lfo.start();
+  s2.connect(bp).connect(g2).connect(master);s2.start();
+  ambSnd={master,nodes:[s1,s2,lfo]};}
+function stopAmbient(){if(!ambSnd||!actx)return;const a=ambSnd;ambSnd=null;a.master.gain.linearRampToValueAtTime(0,actx.currentTime+0.4);setTimeout(()=>{a.nodes.forEach(n=>{try{n.stop();}catch(e){}});a.master.disconnect();},600);}
+function bubbleSound(){if(!ambSnd)return;const ctx=actx,t=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();const f=rnd(380,820);
+  o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*2.3,t+0.05);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(rnd(0.02,0.05),t+0.008);g.gain.exponentialRampToValueAtTime(0.0005,t+0.07);
+  o.connect(g).connect(ambSnd.master);o.start(t);o.stop(t+0.08);}
+function plop(){const ctx=AC();if(!ctx)return;const t=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();o.frequency.setValueAtTime(700,t);o.frequency.exponentialRampToValueAtTime(160,t+0.12);
+  g.gain.setValueAtTime(0.12,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.connect(g).connect(ctx.destination);o.start(t);o.stop(t+0.16);}
+function shutter(){const ctx=AC();if(!ctx)return;const t=ctx.currentTime,b=noiseBuf(ctx,0.08);for(const d of[0,0.07]){const s=ctx.createBufferSource(),g=ctx.createGain(),hp=ctx.createBiquadFilter();hp.type='highpass';hp.frequency.value=2000;
+  s.buffer=b;g.gain.setValueAtTime(0.5,t+d);g.gain.exponentialRampToValueAtTime(0.001,t+d+0.05);s.connect(hp).connect(g).connect(ctx.destination);s.start(t+d);s.stop(t+d+0.06);}}
+function setSound(on,save){soundOn=on;$('bSound').classList.toggle('on',on);if(on)startAmbient();else stopAmbient();if(save){try{localStorage.setItem('aq_sound',on?'1':'0');}catch(e){}}}
+$('bSound').onclick=()=>setSound(!soundOn,true);
+$('bSound').classList.toggle('on',soundOn);
+if(soundOn){const kick=()=>{document.removeEventListener('pointerdown',kick,true);if(soundOn)startAmbient();};document.addEventListener('pointerdown',kick,true);}
+document.addEventListener('visibilitychange',()=>{if(!actx)return;if(document.hidden)actx.suspend();else if(soundOn)actx.resume();});
+
+// ---------- photo ----------
+let wantShot=false,shotBlob=null,shotUrl=null;
+$('bPhoto').onclick=()=>{wantShot=true;};
+function takePhoto(){const src=renderer.domElement,c=document.createElement('canvas');c.width=src.width;c.height=src.height;const g=c.getContext('2d');g.drawImage(src,0,0);
+  const d=new Date(),p2=n=>String(n).padStart(2,'0'),stamp=`${d.getFullYear()}/${p2(d.getMonth()+1)}/${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  const label='🐠 3D 水草神仙魚缸 · '+stamp;let fs=Math.round(Math.min(c.width,c.height)*0.04);const fnt=n=>`600 ${n}px -apple-system,"PingFang TC","Noto Sans TC",sans-serif`;g.font=fnt(fs);
+  while(fs>8&&g.measureText(label).width>c.width-fs*2){fs--;g.font=fnt(fs);}g.textBaseline='bottom';g.shadowColor='rgba(0,0,0,.7)';g.shadowBlur=fs*0.4;
+  g.fillStyle='rgba(255,255,255,.92)';g.fillText(label,fs*0.9,c.height-fs*0.8);
+  const fl=$('flash');fl.style.transition='none';fl.style.opacity=0.85;requestAnimationFrame(()=>{fl.style.transition='opacity .45s';fl.style.opacity=0;});shutter();
+  c.toBlob(b=>{if(!b)return;shotBlob=b;if(shotUrl)URL.revokeObjectURL(shotUrl);shotUrl=URL.createObjectURL(b);$('shotImg').src=shotUrl;$('shot').style.display='flex';},'image/jpeg',0.92);}
+$('shotX').onclick=()=>{$('shot').style.display='none';};
+$('shotSave').onclick=()=>{if(!shotBlob)return;const name='aquarium-'+Date.now()+'.jpg';let file=null;try{file=new File([shotBlob],name,{type:'image/jpeg'});}catch(e){}
+  if(file&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:'3D 水草神仙魚缸'}).catch(()=>{});return;}
+  const a=document.createElement('a');a.href=shotUrl;a.download=name;document.body.appendChild(a);a.click();a.remove();toast('照片已下載');};
+
+// ---------- screensaver / kiosk ----------
+let saver=false,saverPhase=0,saverT=0,wakeLock=null;
+function enterSaver(){saver=true;saverPhase=0;saverT=0;document.body.classList.add('saver');setFeed(false);stopFollow();
+  ['sheet','fishPanel','shot'].forEach(id=>$(id).style.display='none');moreMenu.style.display='none';
+  const de=document.documentElement,rf=de.requestFullscreen||de.webkitRequestFullscreen;if(rf){try{const pr=rf.call(de);if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}}
+  if(navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>{wakeLock=w;}).catch(()=>{});
+  toast('螢幕保護中 · 點一下畫面離開');}
+function exitSaver(){saver=false;document.body.classList.remove('saver');stopFollow();
+  const ex=document.exitFullscreen||document.webkitExitFullscreen;if((document.fullscreenElement||document.webkitFullscreenElement)&&ex){try{const pr=ex.call(document);if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}}
+  if(wakeLock){wakeLock.release().catch(()=>{});wakeLock=null;}}
+$('bSaver').onclick=()=>setTimeout(enterSaver,50);
+document.addEventListener('pointerdown',e=>{if(saver){e.stopPropagation();e.preventDefault();exitSaver();}},true);
+document.addEventListener('visibilitychange',()=>{if(saver&&!document.hidden&&navigator.wakeLock&&!wakeLock)navigator.wakeLock.request('screen').then(w=>{wakeLock=w;}).catch(()=>{});});
+if(QS&&QS.get('kiosk')==='1')setTimeout(enterSaver,800);
+
+// ---------- shared flow field ----------
+// 圓桶過濾的出水口（左後方百合管）往 +x 噴出水流，沿右側往下、沿底部回流到左側往上；
+// 氣泡石開著時有上升的氣泡柱；再加一點緩慢的環境擾動。魚、水草、懸浮微粒、氣泡、飼料都用同一個水流場。
+const JET=V(-4.5,5.0,-2.25);
+function flowAt(x,y,z,t,out){out.set(0,0,0);
+  const al=x-JET.x;
+  if(al>0){const w=0.45+al*0.2,r2=((y-JET.y)*(y-JET.y)+(z-JET.z-al*0.12)*(z-JET.z-al*0.12))/(w*w);const s=0.95*Math.exp(-al*0.11)*Math.exp(-r2);out.x+=s;out.z+=s*0.22;out.y-=s*0.05;}
+  out.x+=y>3.6?0.05:-0.06;
+  if(x>4.4)out.y-=0.09*(x-4.4);if(x<-4.4)out.y+=0.07*(-4.4-x);
+  if(airOn){const dx=x-stonePos.x,dz=z-stonePos.z,r2=dx*dx+dz*dz;const pl=Math.exp(-r2/0.18);out.y+=0.7*pl;out.x-=dx*0.15*pl;out.z-=dz*0.15*pl;
+    if(y>WATER-0.8){const sp=Math.exp(-r2/1.5)*0.25;out.x+=dx*sp;out.z+=dz*sp;}}
+  out.x+=0.04*Math.sin(0.7*y+t*0.3+z);out.z+=0.04*Math.sin(0.6*x-t*0.25);out.y+=0.02*Math.sin(x*0.5+z*0.7+t*0.4);
+  return out;}
+const flw=V(0,0,0);
+const FLOW_K={school:0.35,top:0.35,mid:0.2,bottom:0,shrimp:0};
 
 // ---------- animate ----------
 const clock=new THREE.Clock();let nightK=0,thermoT=0;const tmp=V(0,0,0),des=V(0,0,0),look=V(0,0,0);
@@ -722,7 +945,14 @@ function animate(){
   if(follow){tgt.lerp(follow.pos,Math.min(1,dt*4));
     if(t-lastUse>1.5){const cA=Math.cos(follow.yaw+sideSign*Math.PI/2),cB=Math.cos(follow.yaw-sideSign*Math.PI/2);if(cB>cA+0.6)sideSign*=-1;
       let d=follow.yaw+sideSign*Math.PI/2-theta;d=Math.atan2(Math.sin(d),Math.cos(d));theta+=d*Math.min(1,dt*1.2);phi+=(((follow.beh==='bottom'||follow.beh==='shrimp')?1.12:1.45)-phi)*Math.min(1,dt);}}
-  else{tgt.lerp(home,Math.min(1,dt*2));if(t-lastUse>6){auto+=dt;theta+=Math.sin(auto*0.15)*0.0016;}}
+  else{tgt.lerp(home,Math.min(1,dt*2));
+    if(saver){theta+=dt*0.05;phi+=((1.32+0.08*Math.sin(t*0.07))-phi)*Math.min(1,dt*0.5);}
+    else if(t-lastUse>6){auto+=dt;theta+=Math.sin(auto*0.15)*0.0016;}}
+  if(saver){saverT+=dt;
+    if(saverPhase===0&&saverT>18&&fishes.length){const pool=fishes.filter(f=>f.beh==='mid'||f.beh==='school'||f.beh==='top');const f=(pool.length?pool:fishes)[Math.random()*(pool.length||fishes.length)|0];
+      startFollow(f);zoomTo=SP[f.kind].fr*1.25;saverPhase=1;saverT=0;}
+    else if(saverPhase===1&&(saverT>14||!follow)){stopFollow();saverPhase=0;saverT=0;}}
+  if(soundOn&&ambSnd&&airOn){bubbleT-=dt;if(bubbleT<=0){bubbleSound();bubbleT=rnd(0.05,0.2);}}
   for(let i=ripples.length-1;i>=0;i--){const m=ripples[i];m.userData.age+=dt;const a=m.userData.age;if(a<0){m.visible=false;continue;}m.visible=true;
     m.scale.setScalar(1+a*14);m.material.opacity=Math.max(0,0.8*(1-a/0.7));if(a>0.7){scene.remove(m);m.material.dispose();ripples.splice(i,1);}}
   camera.position.set(tgt.x+radius*Math.sin(phi)*Math.sin(theta),tgt.y+radius*Math.cos(phi),tgt.z+radius*Math.sin(phi)*Math.cos(theta));camera.lookAt(tgt);
@@ -730,29 +960,40 @@ function animate(){
   causTex.offset.set(t*0.03,t*0.02);
   const sp=surfG.attributes.position;
   for(let i=0;i<sp.count;i++){const x=surfBase[i*3],z=surfBase[i*3+2];let y=0.035*Math.sin(x*1.4+t*1.4)+0.025*Math.cos(z*2.1+t*1.1);
-    if(airOn){const d=Math.hypot(x-stonePos.x,z-stonePos.z);y+=0.06*Math.exp(-d*1.5)*Math.sin(d*8-t*8);}sp.array[i*3+1]=y;}
+    if(airOn){const d=Math.hypot(x-stonePos.x,z-stonePos.z);y+=0.06*Math.exp(-d*1.5)*Math.sin(d*8-t*8);}
+    for(const w of wRipples){const age=t-w.t0,dd=Math.hypot(x-w.x,z-w.z)-age*1.8;y+=w.a*Math.exp(-age*1.1)*Math.exp(-dd*dd*5)*Math.sin(dd*9);}
+    sp.array[i*3+1]=y;}
+  while(wRipples.length&&t-wRipples[0].t0>3.5)wRipples.shift();
+  if(feedMode){feedIdle+=dt;if(feedIdle>25)setFeed(false);}
   sp.needsUpdate=true;surfG.computeVertexNormals();
 
   coilMat.color.setRGB(1,0.35+0.15*Math.sin(t*2),0.1);heaterLight.intensity=0.25+0.12*Math.sin(t*2);
   thermoT+=dt;if(thermoT>3){thermoT=0;thermoTemp=Math.max(thermoTarget-0.3,Math.min(thermoTarget+0.3,thermoTemp+rnd(-0.1,0.1)+(thermoTarget-thermoTemp)*0.35));drawThermo();$('hTemp').textContent=thermoTemp.toFixed(1)+'°C';}
 
-  // gentle current from lily pipe: +x near top, returns -x near bottom
-  for(let i=0;i<NP;i++){const k=i*3;const y=pPos[k+1];pPos[k]+=((y>3.5?0.18:-0.06)+Math.sin(t+i)*0.05)*dt;pPos[k+1]+=Math.sin(t*0.5+i*1.3)*0.002;
-    if(pPos[k]<-5.85)pPos[k]=5.8;if(pPos[k]>5.85)pPos[k]=-5.8;}
+  // suspended particles ride the flow field
+  for(let i=0;i<NP;i++){const k=i*3;flowAt(pPos[k],pPos[k+1],pPos[k+2],t,flw);pPos[k]+=flw.x*dt;pPos[k+1]+=flw.y*dt*0.8;pPos[k+2]+=flw.z*dt;
+    if(pPos[k]<-5.85)pPos[k]=5.8;if(pPos[k]>5.85)pPos[k]=-5.8;if(pPos[k+1]>5.5)pPos[k+1]=0.7;if(pPos[k+1]<0.55)pPos[k+1]=5.4;if(pPos[k+2]>2.35)pPos[k+2]=-2.3;if(pPos[k+2]<-2.35)pPos[k+2]=2.3;}
   pGeo.attributes.position.needsUpdate=true;
   bubbleMat.opacity+=((airOn?0.75:0)-bubbleMat.opacity)*Math.min(1,dt*3);
-  for(let i=0;i<NB;i++){const k=i*3;bPos[k+1]+=bSpd[i]*dt;bPos[k]+=Math.sin(t*6+i)*0.004;bPos[k+2]+=Math.cos(t*5+i)*0.003;if(bPos[k+1]>WATER){if(airOn)resetB(i,false);else bPos[k+1]=-50;}
+  for(let i=0;i<NB;i++){const k=i*3;bPos[k+1]+=bSpd[i]*dt;bPos[k]+=Math.sin(t*6+i)*0.004+(bPos[k+1]>3.8?0.12*dt:0);bPos[k+2]+=Math.cos(t*5+i)*0.003;if(bPos[k+1]>WATER){if(airOn)resetB(i,false);else bPos[k+1]=-50;}
     else if(bPos[k+1]<-10&&airOn)resetB(i,false);}
   bGeo.attributes.position.needsUpdate=true;
 
-  for(const m of vallis){const u=m.userData,p=m.geometry.attributes.position,a=p.array;const s=Math.sin(t*0.9+u.ph)*u.amp,s2=Math.cos(t*0.7+u.ph)*u.amp*0.5;
-    for(let k=0;k<p.count;k++){const y=u.base[k*3+1];const f=(y/u.h)*(y/u.h);a[k*3]=u.base[k*3]+(s+0.35)*f;a[k*3+2]=s2*f;}p.needsUpdate=true;}
-  for(const a of swayers){a.rotation.x=a.userData.tilt+0.08*Math.sin(t*1.1+a.userData.ph);}
+  // plants bend with the local flow (converted into each blade's own frame) plus a gentle sway
+  for(const m of vallis){const u=m.userData,p=m.geometry.attributes.position,a=p.array;
+    flowAt(m.position.x,m.position.y+u.h*0.8,m.position.z,t,flw);const ry=m.rotation.y,c=Math.cos(ry),sn=Math.sin(ry);
+    const lx=(c*flw.x-sn*flw.z)*1.3,lz=(sn*flw.x+c*flw.z)*1.3;
+    const s=Math.sin(t*0.9+u.ph)*u.amp*0.6+lx,s2=Math.cos(t*0.7+u.ph)*u.amp*0.35+lz;
+    for(let k=0;k<p.count;k++){const y=u.base[k*3+1];const f=(y/u.h)*(y/u.h);a[k*3]=u.base[k*3]+s*f;a[k*3+2]=s2*f;}p.needsUpdate=true;}
+  for(const a of swayers){const u=a.userData;if(!u.wp)u.wp=a.getWorldPosition(V(0,0,0));flowAt(u.wp.x,u.wp.y+0.5,u.wp.z,t,flw);const fm=Math.hypot(flw.x,flw.z);
+    a.rotation.x=u.tilt+(0.06+fm*0.25)*Math.sin(t*(1.1+fm*2)+u.ph)+fm*0.12;}
 
   // food
   for(let i=foods.length-1;i>=0;i--){const f=foods[i],u=f.userData;
-    if(u.float>0){u.float-=dt;f.position.x+=0.12*dt;f.position.y=WATER-0.02+Math.sin(t*3+u.ph)*0.01;}
-    else{u.vy=u.sinker?-0.6:-0.3;f.position.y+=u.vy*dt;f.position.x+=Math.sin(t*2+u.ph)*0.08*dt;}
+    flowAt(f.position.x,f.position.y,f.position.z,t,flw);
+    if(u.float>0){u.float-=dt;f.position.x+=flw.x*dt*0.9;f.position.z+=flw.z*dt*0.9;f.position.y=WATER-0.02+Math.sin(t*3+u.ph)*0.01;}
+    else if(!u.life){u.vy=u.sinker?-0.6:-0.3;f.position.y+=(u.vy+flw.y*0.5)*dt;f.position.x+=(flw.x*0.7+Math.sin(t*2+u.ph)*0.08)*dt;f.position.z+=flw.z*0.7*dt;}
+    f.position.x=Math.max(-5.8,Math.min(5.8,f.position.x));f.position.z=Math.max(-2.3,Math.min(2.3,f.position.z));
     const g=soilY(f.position.x,f.position.z)+0.03;if(f.position.y<g){f.position.y=g;u.life=(u.life||0)+dt;if(u.life>15){scene.remove(f);foods.splice(i,1);}}}
 
   // school wander goal
@@ -760,7 +1001,7 @@ function animate(){
 
   for(const o of fishes){
     o.scare=Math.max(0,o.scare-dt);
-    if(o.sink){o.pos.y-=dt*1.1;o.pos.x+=Math.sin(t*3+o.ph)*0.004;const gy=soilY(o.pos.x,o.pos.z)+SP[o.kind].ymin;if(o.pos.y<=gy){o.pos.y=gy;o.sink=false;}o.root.position.copy(o.pos);continue;}
+    if(o.sink){o.pos.y-=dt*1.1;o.pos.x+=Math.sin(t*3+o.ph)*0.004;const gy=soilY(o.pos.x,o.pos.z)+SP[o.kind].ymin;if(o.pos.y<=gy){o.pos.y=gy;o.sink=false;}o.root.position.copy(o.pos);writeInstance(o,0,0,o.flap+=dt*6,0,0,0);continue;}
     let chasing=null,bestF=1e9;
     if(foods.length){for(const f of foods){const btm=o.beh==='bottom'||o.beh==='shrimp';if(btm&&f.position.y>soilY(f.position.x,f.position.z)+0.5)continue;if(!btm&&f.userData.sinker)continue;
         const d=f.position.distanceTo(o.pos);if(d<bestF){bestF=d;chasing=f;}}
@@ -809,6 +1050,7 @@ function animate(){
       o.vel.lerp(des,Math.min(1,dt*(o.scare>0?4:1.4)));
     }
     o.pos.addScaledVector(o.vel,dt);
+    if(FLOW_K[o.beh]){flowAt(o.pos.x,o.pos.y,o.pos.z,t,flw);o.pos.addScaledVector(flw,dt*FLOW_K[o.beh]);}
     const sy=soilY(o.pos.x,o.pos.z);
     const S=SP[o.kind];const yMin=sy+S.ymin,yMax=S.ymax>0?WATER-S.ymax:sy-S.ymax;
     o.pos.x=Math.max(-5.5,Math.min(5.5,o.pos.x));o.pos.y=Math.max(yMin,Math.min(yMax,o.pos.y));o.pos.z=Math.max(-2.0,Math.min(2.15,o.pos.z));
@@ -820,26 +1062,26 @@ function animate(){
     o.turn+=(dy/Math.max(dt,1e-3)-o.turn)*Math.min(1,dt*6);
     const v=o.vel.length();const rel=Math.min(2,v/o.base);
     o.wave+=dt*(S.freq+(S.freq?v*7:0));
-    o.u.uPhase.value=o.wave;
-    o.u.uAmp.value=o.bendAmp*(0.3+0.9*rel);
-    o.u.uCurve.value=Math.max(-0.28,Math.min(0.28,o.turn*0.09));
-    if(o.beh!=='shrimp')o.body.rotation.y=Math.sin(o.wave+1.2)*0.03*rel;
-    o.pects.forEach(({pv,s})=>pv.rotation.y=s*(0.5+(rel<0.3?0.6:0.35)*Math.sin(t*(o.beh==='mid'?(rel<0.3?7:4):9)+o.ph)));
-    if(o.vents)o.vents.forEach((vv,i)=>vv.rotation.x=0.12*Math.sin(t*1.5+o.ph+i));
-    if(o.beh!=='bottom'&&o.beh!=='shrimp')o.body.position.y=Math.sin(t*1.2+o.ph)*0.03;
-    if(o.anim)o.anim(t,o);
+    o.flap+=dt*(o.beh==='mid'?(rel<0.3?7:4):o.beh==='shrimp'?5:9);
+    const amp=o.bendAmp*(0.3+0.9*rel),curve=Math.max(-0.28,Math.min(0.28,o.turn*0.09));
+    const wig=o.beh==='shrimp'?0:Math.sin(o.wave+1.2)*0.03*rel;
+    const bob=(o.beh!=='bottom'&&o.beh!=='shrimp')?Math.sin(t*1.2+o.ph)*0.03*o.sc:0;
+    const peck=(o.beh==='shrimp'&&o.pause>0)?0.12+0.08*Math.sin(t*7+o.ph):0;
+    writeInstance(o,amp,curve,o.flap,wig,bob,peck);
   }
 
+  flushGroups();
   // light shafts face camera and shimmer
   for(const m of shafts){const u=m.userData;m.rotation.y=theta;m.rotation.z=u.tilt+0.03*Math.sin(t*0.4+u.ph);m.material.opacity=u.base*(0.55+0.45*Math.sin(t*0.6+u.ph))*(1-nightK);}
-  scene.fog.color.setRGB(0.05-0.03*nightK,0.15-0.1*nightK,0.12-0.07*nightK);
-  scene.fog.near=Math.max(0.5,radius-3.5);scene.fog.far=scene.fog.near+34;
+  scene.fog.color.setRGB(0.06-0.04*nightK,0.16-0.115*nightK,0.13-0.08*nightK);
+  scene.fog.near=Math.max(0.3,camera.position.distanceTo(tgt)-3.0);scene.fog.far=t;
   if(quality==='high'&&composer){
     const want=follow?camera.position.distanceTo(follow.pos):radius;focusD+=(want-focusD)*Math.min(1,dt*6);
     bokeh.uniforms.focus.value=focusD;bokeh.uniforms.aperture.value=follow?0.003:0.0015;
     bloom.strength=0.22+0.15*nightK;
     composer.render(dt);
   }else renderer.render(scene,camera);
+  if(wantShot){wantShot=false;takePhoto();}
   // auto-downgrade if the device struggles
   if(!fpsChecked&&!userPicked&&quality==='high'&&t>1.5){if(fpsStart<0)fpsStart=t;fpsFrames++;if(t-fpsStart>4){fpsChecked=true;const fps=fpsFrames/(t-fpsStart);
     if(fps<26){applyQuality('low',false);toast('裝置較吃力，已自動切換為省電畫質（右上可切回）');}}}
