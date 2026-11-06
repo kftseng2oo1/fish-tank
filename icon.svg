@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a9a7a"/>
+      <stop offset="0.55" stop-color="#17594a"/>
+      <stop offset="1" stop-color="#0a2a22"/>
+    </linearGradient>
+    <linearGradient id="ray" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9e2c8"/>
+      <stop offset="0.35" stop-color="#f7faf9"/>
+      <stop offset="1" stop-color="#b7c4c1"/>
+    </linearGradient>
+    <linearGradient id="fin" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#eef6f3" stop-opacity=".85"/>
+    </linearGradient>
+    <clipPath id="fishClip">
+      <path d="M332,256 C330,212 292,184 246,184 C206,186 186,222 186,256 C186,290 206,326 246,328 C292,328 330,300 332,256 Z"/>
+      <path d="M300,203 C262,158 228,110 200,78 C193,100 188,150 198,214 Z"/>
+      <path d="M300,309 C262,354 228,402 200,434 C193,412 188,362 198,298 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- water -->
+  <rect width="512" height="512" fill="url(#water)"/>
+  <!-- light rays -->
+  <polygon points="90,0 150,0 250,512 170,512" fill="url(#ray)"/>
+  <polygon points="200,0 236,0 330,512 280,512" fill="url(#ray)" opacity=".7"/>
+  <polygon points="330,0 380,0 470,512 400,512" fill="url(#ray)" opacity=".55"/>
+  <!-- surface shimmer -->
+  <path d="M0,40 Q64,28 128,40 T256,40 T384,40 T512,40" stroke="#bff3dd" stroke-opacity=".35" stroke-width="4" fill="none"/>
+
+  <!-- sand -->
+  <ellipse cx="256" cy="530" rx="330" ry="80" fill="#c9b48e"/>
+  <ellipse cx="256" cy="540" rx="330" ry="80" fill="#3b2c22" opacity=".55"/>
+
+  <!-- plants (back) -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M70,512 C62,430 90,380 70,300" stroke="#2f8f48" stroke-width="13"/>
+    <path d="M100,512 C110,440 80,400 112,330" stroke="#46b25c" stroke-width="11"/>
+    <path d="M45,512 C40,460 20,420 34,360" stroke="#2a7e40" stroke-width="10"/>
+    <path d="M440,512 C450,430 420,390 444,300" stroke="#2f8f48" stroke-width="13"/>
+    <path d="M410,512 C400,450 430,410 404,345" stroke="#46b25c" stroke-width="11"/>
+    <path d="M470,512 C478,460 494,425 482,370" stroke="#2a7e40" stroke-width="10"/>
+  </g>
+  <!-- sword-plant leaves -->
+  <g>
+    <path d="M150,512 C130,470 120,440 128,405 C150,440 160,475 150,512 Z" fill="#5cc46e"/>
+    <path d="M162,512 C170,470 186,446 214,430 C204,465 186,495 162,512 Z" fill="#3fa456"/>
+    <path d="M360,512 C380,472 392,444 386,412 C364,444 354,478 360,512 Z" fill="#5cc46e"/>
+    <path d="M350,512 C340,474 324,452 298,440 C308,472 326,498 350,512 Z" fill="#3fa456"/>
+  </g>
+
+  <!-- bubbles -->
+  <g fill="#ffffff" fill-opacity=".12" stroke="#ffffff" stroke-opacity=".8" stroke-width="3">
+    <circle cx="368" cy="168" r="11"/>
+    <circle cx="388" cy="128" r="8"/>
+    <circle cx="376" cy="96" r="5.5"/>
+  </g>
+
+  <!-- angelfish -->
+  <g>
+    <!-- ventral filaments -->
+    <path d="M278,300 Q258,362 226,432" stroke="#f4f8f6" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M270,304 Q248,360 214,422" stroke="#dfe8e5" stroke-width="4" fill="none" stroke-linecap="round" opacity=".85"/>
+    <!-- tail -->
+    <path d="M194,256 L132,196 Q150,256 132,316 Z" fill="url(#fin)"/>
+    <!-- fins -->
+    <path d="M300,203 C262,158 228,110 200,78 C193,100 188,150 198,214 Z" fill="url(#fin)"/>
+    <path d="M300,309 C262,354 228,402 200,434 C193,412 188,362 198,298 Z" fill="url(#fin)"/>
+    <!-- body -->
+    <path d="M332,256 C330,212 292,184 246,184 C206,186 186,222 186,256 C186,290 206,326 246,328 C292,328 330,300 332,256 Z" fill="url(#silver)"/>
+    <!-- bars -->
+    <g clip-path="url(#fishClip)" fill="#141414" opacity=".88">
+      <rect x="292" y="180" width="11" height="150"/>
+      <path d="M244,60 L262,60 L262,460 L244,460 Z" transform="rotate(-8 253 256)"/>
+      <rect x="198" y="60" width="12" height="400"/>
+    </g>
+    <!-- gill line -->
+    <path d="M286,222 Q276,256 286,292" stroke="#9fb0ac" stroke-width="2.5" fill="none" opacity=".7"/>
+    <!-- eye -->
+    <circle cx="308" cy="238" r="10" fill="#d0281a"/>
+    <circle cx="309" cy="238" r="5" fill="#111"/>
+    <circle cx="306" cy="235" r="2" fill="#fff"/>
+  </g>
+</svg>
